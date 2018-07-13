@@ -2,9 +2,14 @@
 // repo at https://github.com/steinbrennergit/welp-project/
 
 // Initialize Firebase - replace with your own config object!
-var config = {
-    
+var fbConfig = {
+    apiKey: fbApiKey,
+    authDomain: fbAuthDomain,
+    databaseURL: fbDatabaseURL,
+    projectId: fbProjectId,
+    storageBucket: fbStorageBucket,
+    messagingSenderId: fbMessagingSenderId
 };
-firebase.initializeApp(config);
+firebase.initializeApp(fbConfig);
 const db = firebase.database();
 /*******************************/
