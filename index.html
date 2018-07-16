@@ -10,21 +10,106 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB"
         crossorigin="anonymous">
 
+    <!-- Link Fonts-->
+    <link href="https://fonts.googleapis.com/css?family=Merienda|Rock+Salt" rel="stylesheet">
+
     <!-- Linking my CSS -->
     <link rel="stylesheet" href="assets/css/style.css">
 
+    <!-- Bing script link -->
+    <script type='text/javascript' src="https://www.bing.com/api/maps/mapcontrol?callback=GetMap&amp;key=AhquGMow-8CnsRU8ba3bjzCJHPaeg7xz6sQ47x1-xZuI5fEHPTd105T_za-OXnBQ"
+        async defer></script>
 
-
-    <title>Document</title>
+    <title>Welp</title>
 </head>
 
 <body>
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="jumbotron">
+                    <h1 class="display-4">Welp!</h1>
+                    <form id="info-input">
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">How much money do you have?</label>
+                            <input type="money" class="form-control" id="money" placeholder="$10.00">
+                            <small id="text-box" class="form-text text-muted">It's ok if you're poor, so are we.......</small>
+                        </div>
+                        <div class="row">
+
+                            <div class="form-group">
+                                <label for="whereAreYou">Where are you?</label>
+                                <input type="location" class="form-control" id="city-location" placeholder="City" style="float: left;">
+                            </div>
+                            <div>
+                                <input type="location" class="form-control" id="zip-location" placeholder="Zip" style="float: right;">
+                            </div>
+                        </div>
+                        <br>
+
+                        <!-- Button trigger modal -->
+                        <!-- Move modal to the begining to collect user info, or for auth-->
+                        <button type="button" id="submit-button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+                            Login
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row hide">
+        <div class="col-sm-6">
+            <div class="list-group" id="column-group">
+                <a href="#" class="list-group-item list-group-item-action flex-column align-items-start active">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1" id="name"></h5>
+                    </div>
+                    <p class="mb-1" id="address"></p>
+                    <small id="phone"></small>
+                </a>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <img class="bing-map" id="map" src="https://img.etsystatic.com/il/289409/720708044/il_570xN.720708044_8vd9.jpg?version=1"
+                alt="">
+            </div>
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="email">Sign In</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="recipient-name" class="col-form-label">Email:</label>
+                            <input type="text" class="form-control" id="Email">
+                        </div>
+                        <div class="form-group">
+                            <label for="message-text" class="col-form-label">Password:</label>
+                            <input type="text" class="form-control" id="password">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Login</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 
 
     <!-- Firebase Reference -->
     <script src="https://www.gstatic.com/firebasejs/5.2.0/firebase.js"></script>
-    
+
     <!-- Linking JQuery and Bootstrap JS components -->
     <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
         crossorigin="anonymous"></script>
@@ -36,7 +121,7 @@
     <!-- Linking my JS -->
     <script src="assets/javascript/config.js"></script>
     <script src="assets/javascript/app.js"></script>
-    
+
 </body>
 
 </html>
