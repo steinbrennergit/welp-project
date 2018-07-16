@@ -117,8 +117,9 @@ function generateMap() {
 
     // For each restaurant object in restaurantList, create a pushpin on the map with the address
 
-    // Once complete, append that map to HTML
-    var map = new Microsoft.Maps.Map('#myMap', {});
+    // Remove the hide class from map-div
+
+    var map = new Microsoft.Maps.Map("#map-div", {});
 
     for (let i = 0; i < restaurantList.length; i++) {
 
@@ -129,7 +130,8 @@ function generateMap() {
         var pin = new Microsoft.Maps.Pushpin(loc);
         map.entities.push(pin);
     };
-    $("#myMap").removeClass("hide");
+
+    $("#map-div").removeClass("hide");
 }
 
 function generateList() {
