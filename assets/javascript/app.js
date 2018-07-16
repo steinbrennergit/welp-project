@@ -94,10 +94,10 @@ function getRestaurants(money, city, zip) {
         method: 'GET'
     }).then(function (res) {
         // Res should contain an object for the city, with an id
-    
+
         console.log(res)
         var id = res.location_suggestions["0"].id; // Set this to the id provided by the object
-      
+
         var secondQueryURL = "https://developers.zomato.com/api/v2.1/search?apikey=284d8bf6da6b7fc3efc07100c1246454&entity_type=city&sort=cost&order=asc&entity_id=" + id // Add parameters to this URL
 
         // Parameters:
@@ -115,12 +115,12 @@ function getRestaurants(money, city, zip) {
 
             console.log(res)
             var filteredRestaurants = []
-            
-            for (let i = 0; i < 20 ; i++) {
-                if (res.restaurants[i] === undefined ){
+
+            for (let i = 0; i < 20; i++) {
+                if (res.restaurants[i] === undefined) {
                     break
                 }
-                
+
                 var restaurant = res.restaurants[i].restaurant
                 var costforOne = restaurant.average_cost_for_two / 2;
                 if (costforOne <= money && costforOne !== 0) {
@@ -138,7 +138,7 @@ function getRestaurants(money, city, zip) {
                 var restaurant = res.restaurants[i].restaurant;
                 var costForOne = restaurant.average_cost_for_two / 2;
                 if (costForOne <= money && costForOne !== 0) {
-                    
+
                 }
             }
 
@@ -156,7 +156,18 @@ function generateMap() {
     // For each restaurant object in restaurantList, create a pushpin on the map with the address
 
     // Once complete, append that map to HTML
+    var map = new Microsoft.Maps.Map('#myMap', {});
 
+    for (let i = 0; i < restrauntList.length; i++) {
+
+        var restaurant = restaurantList[i];
+        var latitude = restaurant.location.latitude;
+        var longitude = restaurant.location.longitude;
+        var loc = new Microsoft.Maps.Location(latitude, longitude);
+        var pin = new Microsoft.Maps.Pushpin(loc);
+        map.entities.push(pin);
+    };
+    $("#myMap").removeClass("hide");
 }
 
 function generateList() {
@@ -170,6 +181,3 @@ function generateList() {
     // * If possible - using a Bing Maps method/function, the distance between restaurant and provided zip code
     // Append each div to our container for results in HTML
 }
-
-
-
