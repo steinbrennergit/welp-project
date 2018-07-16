@@ -29,20 +29,7 @@ Process (what happens when a user Submits)
     - Store search parameters under that username for them to return to later
 */
 
-// Initialize Firebase - replace with your own config object!
-
-///var fbConfig = {
-// apiKey: fbApiKey,
-//authDomain: fbAuthDomain,
-//databaseURL: fbDatabaseURL,
-//projectId: fbProjectId,
-//storageBucket: fbStorageBucket,
-//messagingSenderId: fbMessagingSenderId
-//};
-//firebase.initializeApp(fbConfig);
-//const db = firebase.database();
-/*******************************/
-
+/***********JEFF'S CODE*******************/
 // var config = {
 //     apiKey: "AIzaSyATWzOdMstZlUPbb9P7XJgg60zt0e6-ppQ",
 //     authDomain: "stuffandjunk-13b4b.firebaseapp.com",
@@ -52,7 +39,7 @@ Process (what happens when a user Submits)
 //     messagingSenderId: "842764135029"
 // };
 // var app = firebase.initializeApp(config);
-
+//
 // var ref = firebase.database().ref("bidderData")
 // ref.once("value")
 //     .then(function (snapshot) {
@@ -65,10 +52,14 @@ Process (what happens when a user Submits)
 //             //}
 //         //);
 //     });
+/***********JEFF'S CODE*******************/
 
+
+
+/***********PRODUCTION CODE***************/
 firebase.initializeApp(fbConfig);
 const db = firebase.database();
-/*******************************/
+/*****************************************/
 // Constant HTML references
 const $money = $("#money");
 const $city = $("#city-location");
@@ -76,6 +67,7 @@ const $zip = $("#zip-location");
 const $map = $("#map-div");
 const $results = $("#results");
 
+// Global vars
 var userCity = null;
 var restaurantList = [];
 
@@ -105,8 +97,9 @@ function getRestaurants(money, city, zip) {
     
         console.log(res)
         var id = res.location_suggestions["0"].id; // Set this to the id provided by the object
-
+      
         var secondQueryURL = "https://developers.zomato.com/api/v2.1/search?apikey=284d8bf6da6b7fc3efc07100c1246454&entity_type=city&sort=cost&order=asc&entity_id=" + id // Add parameters to this URL
+
         // Parameters:
         // entity-id
         // entity-type
@@ -119,6 +112,7 @@ function getRestaurants(money, city, zip) {
         }).then(function (res) {
             // Res should contain an object containing up to 20 restaurant objects, sorted by cost
             // If we want more than 20, we would call again with an offset - don't worry about this right now
+
             console.log(res)
             var filteredRestaurants = []
             
@@ -136,10 +130,45 @@ function getRestaurants(money, city, zip) {
             }
             // Iterating through restaurant objects, push all restaurant objects where the average cost for two / 2 < money
             // Loop logic goes here***
+            for (let i = 0; i < 20; i++) {
+                if (res.restaurants[i] === undefined) {
+                    break;
+                }
+
+                var restaurant = res.restaurants[i].restaurant;
+                var costForOne = restaurant.average_cost_for_two / 2;
+                if (costForOne <= money && costForOne !== 0) {
+                    
+                }
+            }
+
             // After this, assign the result to the global variable restaurantList
             restaurantList = filteredRestaurants;
+            generateMap();
         });
     });
+}
+
+function generateMap() {
+
+    // Create a map object using Bing Maps API
+
+    // For each restaurant object in restaurantList, create a pushpin on the map with the address
+
+    // Once complete, append that map to HTML
+
+}
+
+function generateList() {
+    // For each restaurant object (LOOP)
+
+    // Create an HTML element (div)
+    // Append to the div:
+    // * Restaurant name - Link to the restaurant website?
+    // * Restaurant average cost (cost for 2 divided by 2)
+    // * Restaurant address
+    // * If possible - using a Bing Maps method/function, the distance between restaurant and provided zip code
+    // Append each div to our container for results in HTML
 }
 
 
