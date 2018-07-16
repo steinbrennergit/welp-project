@@ -1,3 +1,4 @@
+
 .jumbotron{
     margin: 0% auto;
     width: 40%;
@@ -24,8 +25,7 @@
     #btn btn-primary{width: 50%};
     #btn btn-primary{font-size: 29%};
 }
-
-
-
-
+.hide {
+    display: none; 
+}
 
