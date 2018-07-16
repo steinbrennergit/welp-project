@@ -39,7 +39,7 @@ Process (what happens when a user Submits)
 //     messagingSenderId: "842764135029"
 // };
 // var app = firebase.initializeApp(config);
-
+//
 // var ref = firebase.database().ref("bidderData")
 // ref.once("value")
 //     .then(function (snapshot) {
@@ -59,7 +59,7 @@ Process (what happens when a user Submits)
 /***********PRODUCTION CODE***************/
 firebase.initializeApp(fbConfig);
 const db = firebase.database();
-/*******************************/
+/*****************************************/
 // Constant HTML references
 const $money = $("#money");
 const $city = $("#city");
@@ -67,6 +67,7 @@ const $zip = $("#zip");
 const $map = $("#map-div");
 const $results = $("#results");
 
+// Global vars
 var userCity = null;
 var restaurantList = [];
 
@@ -94,7 +95,7 @@ function getRestaurants(money, city, zip) {
     }).then(function (res) {
         // Res should contain an object for the city, with an id
 
-        var id = null; // Set this to the id provided by the object
+        var id = null; // Set this to the id provided by the object (NOT null)
 
         var secondQueryURL = "https://developers.zomato.com/api/v2.1/search?apikey=284d8bf6da6b7fc3efc07100c1246454" // Add parameters to this URL
         // Parameters:
@@ -115,8 +116,31 @@ function getRestaurants(money, city, zip) {
             // Loop logic goes here***
             // After this, assign the result to the global variable restaurantList
             restaurantList = filteredRestaurants;
+            generateMap();
         });
     });
+}
+
+function generateList() {
+    // For each restaurant object (LOOP)
+
+    // Create an HTML element (div)
+    // Append to the div:
+    // * Restaurant name - Link to the restaurant website?
+    // * Restaurant average cost (cost for 2 divided by 2)
+    // * Restaurant address
+    // * If possible - using a Bing Maps method/function, the distance between restaurant and provided zip code
+    // Append each div to our container for results in HTML
+}
+
+function generateMap() {
+
+    // Create a map object using Bing Maps API
+
+    // For each restaurant object in restaurantList, create a pushpin on the map with the address
+
+    // Once complete, append that map to HTML
+
 }
 
 
