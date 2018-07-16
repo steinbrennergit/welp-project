@@ -48,7 +48,7 @@ var restaurantList = [];
 $("#submit-button").on("click", function () {
     event.preventDefault() // Prevents page from reloading on submit
 
-    let money = $money.val().trim();
+    let money = parseInt($money.val().trim());
     let city = $city.val().trim();
     let zip = $zip.val().trim();
 

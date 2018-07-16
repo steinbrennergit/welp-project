@@ -32,7 +32,13 @@
                     <form id="info-input">
                         <div class="form-group">
                             <label for="exampleInputEmail1">How much money do you have?</label>
-                            <input type="number" class="form-control" id="money" placeholder="$10.00">
+                            <div class="input-group">
+
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">$</span>
+                                </div>
+                                <input type="text" class="form-control" id="money" placeholder="10.00">
+                            </div>
                             <small id="text-box" class="form-text text-muted">It's ok if you're poor, so are we.......</small>
                         </div>
                         <div class="row">
