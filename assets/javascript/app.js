@@ -71,8 +71,8 @@ const db = firebase.database();
 /*******************************/
 // Constant HTML references
 const $money = $("#money");
-const $city = $("#city");
-const $zip = $("#zip");
+const $city = $("#city-location");
+const $zip = $("#zip-location");
 const $map = $("#map-div");
 const $results = $("#results");
 
@@ -93,7 +93,7 @@ function getRestaurants(money, city, zip) {
     let maxDist = 20;
 
 
-    var firstQueryURL = "https://developers.zomato.com/api/v2.1/cities?apikey=284d8bf6da6b7fc3efc07100c1246454"
+    var firstQueryURL = "https://developers.zomato.com/api/v2.1/cities?q=" + city + "&apikey=284d8bf6da6b7fc3efc07100c1246454"
     // Parameters:
     // q (city)
 
@@ -102,10 +102,11 @@ function getRestaurants(money, city, zip) {
         method: 'GET'
     }).then(function (res) {
         // Res should contain an object for the city, with an id
+    
+        console.log(res)
+        var id = res.location_suggestions["0"].id; // Set this to the id provided by the object
 
-        var id = null; // Set this to the id provided by the object
-
-        var secondQueryURL = "https://developers.zomato.com/api/v2.1/search?apikey=284d8bf6da6b7fc3efc07100c1246454" // Add parameters to this URL
+        var secondQueryURL = "https://developers.zomato.com/api/v2.1/search?apikey=284d8bf6da6b7fc3efc07100c1246454&entity_type=city&sort=cost&order=asc&entity_id=" + id // Add parameters to this URL
         // Parameters:
         // entity-id
         // entity-type
@@ -118,8 +119,21 @@ function getRestaurants(money, city, zip) {
         }).then(function (res) {
             // Res should contain an object containing up to 20 restaurant objects, sorted by cost
             // If we want more than 20, we would call again with an offset - don't worry about this right now
-
-            var filteredRestaurants = [];
+            console.log(res)
+            var filteredRestaurants = []
+            
+            for (let i = 0; i < 20 ; i++) {
+                if (res.restaurants[i] === undefined ){
+                    break
+                }
+                
+                var restaurant = res.restaurants[i].restaurant
+                var costforOne = restaurant.average_cost_for_two / 2;
+                if (costforOne <= money && costforOne !== 0) {
+                    filteredRestaurants.push(restaurant)
+                    console.log(restaurant)
+                }
+            }
             // Iterating through restaurant objects, push all restaurant objects where the average cost for two / 2 < money
             // Loop logic goes here***
             // After this, assign the result to the global variable restaurantList
