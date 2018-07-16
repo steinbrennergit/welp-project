@@ -1,18 +1,15 @@
 // found at https://steinbrennergit.github.io/welp-project/
 // repo at https://github.com/steinbrennergit/welp-project/
 
-// Initialize Firebase - replace with your own config object!
-firebase.initializeApp(fbConfig);
-const db = firebase.database();
-/*******************************/
+/* USER STORY
 
-/*
 Process (what happens when a user Submits)
     - Get input of a dollar amount from field (input validation required)
     - Get input of a city name from field
     - Maybe get input of a maximum distance from a third field?
         * Other options; cuisine choices, etc. (can circle back to these features if we get everything 100%)
     - Pass input to Zomato API and retrieve eligible restaurants
+        *** Restaurant requires API key and restaurant ID
         * Inform the user that the city they named is invalid if we get no restaurants/an API error
     - Using the "average cost for two" property from the data returned by Zomato,
         * Filter out restaurants which cost too much
@@ -31,3 +28,68 @@ Process (what happens when a user Submits)
         they can pre-select and get those same results back.
     - Store search parameters under that username for them to return to later
 */
+
+// Initialize Firebase - replace with your own config object!
+firebase.initializeApp(fbConfig);
+const db = firebase.database();
+/*******************************/
+// Constant HTML references
+const $money = $("#money");
+const $city = $("#city");
+const $zip = $("#zip");
+const $map = $("#map-div");
+const $results = $("#results");
+
+var userCity = null;
+var restaurantList = [];
+
+$("#submit-button").on("click", function () {
+    event.preventDefault() // Prevents page from reloading on submit
+
+    let money = $money.val().trim();
+    let city = $city.val().trim();
+    let zip = $zip.val().trim();
+
+    getRestaurants(money, city, zip);
+});
+
+function getRestaurants(money, city, zip) {
+    let maxDist = 20;
+
+
+    var firstQueryURL = "https://developers.zomato.com/api/v2.1/cities?apikey=284d8bf6da6b7fc3efc07100c1246454"
+    // Parameters:
+    // q (city)
+
+    $.ajax({
+        url: firstQueryURL,
+        method: 'GET'
+    }).then(function (res) {
+        // Res should contain an object for the city, with an id
+
+        var id = null; // Set this to the id provided by the object
+
+        var secondQueryURL = "https://developers.zomato.com/api/v2.1/search?apikey=284d8bf6da6b7fc3efc07100c1246454" // Add parameters to this URL
+        // Parameters:
+        // entity-id
+        // entity-type
+        // sort
+        // order
+
+        $.ajax({
+            url: secondQueryURL,
+            method: 'GET'
+        }).then(function (res) {
+            // Res should contain an object containing up to 20 restaurant objects, sorted by cost
+            // If we want more than 20, we would call again with an offset - don't worry about this right now
+
+            var filteredRestaurants = [];
+            // Iterating through restaurant objects, push all restaurant objects where the average cost for two / 2 < money
+            // Loop logic goes here***
+            // After this, assign the result to the global variable restaurantList
+            restaurantList = filteredRestaurants;
+        });
+    });
+}
+
+
