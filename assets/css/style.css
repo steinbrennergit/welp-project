@@ -1,7 +1,7 @@
 
 .jumbotron{
     margin: 0% auto;
-    width: 40%;
+    max-width: 445px;
     margin-top: 10%;
     padding-top: 10px;
     background-color: darkgray;
@@ -24,6 +24,14 @@
     .display-4{font-size: x-large};
     #btn btn-primary{width: 50%};
     #btn btn-primary{font-size: 29%};
+}
+
+.pad-sides {
+    padding: 0 32px;
+}
+
+#pad-less {
+    padding: 0 16px;
 }
 
 .hide{
