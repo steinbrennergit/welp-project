@@ -29,20 +29,7 @@ Process (what happens when a user Submits)
     - Store search parameters under that username for them to return to later
 */
 
-// Initialize Firebase - replace with your own config object!
-
-///var fbConfig = {
-// apiKey: fbApiKey,
-//authDomain: fbAuthDomain,
-//databaseURL: fbDatabaseURL,
-//projectId: fbProjectId,
-//storageBucket: fbStorageBucket,
-//messagingSenderId: fbMessagingSenderId
-//};
-//firebase.initializeApp(fbConfig);
-//const db = firebase.database();
-/*******************************/
-
+/***********JEFF'S CODE*******************/
 // var config = {
 //     apiKey: "AIzaSyATWzOdMstZlUPbb9P7XJgg60zt0e6-ppQ",
 //     authDomain: "stuffandjunk-13b4b.firebaseapp.com",
@@ -65,7 +52,11 @@ Process (what happens when a user Submits)
 //             //}
 //         //);
 //     });
+/***********JEFF'S CODE*******************/
 
+
+
+/***********PRODUCTION CODE***************/
 firebase.initializeApp(fbConfig);
 const db = firebase.database();
 /*******************************/
