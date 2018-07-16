@@ -110,10 +110,17 @@ function getRestaurants(money, city, zip) {
         }).then(function (res) {
             // Res should contain an object containing up to 20 restaurant objects, sorted by cost
             // If we want more than 20, we would call again with an offset - don't worry about this right now
-
             var filteredRestaurants = [];
             // Iterating through restaurant objects, push all restaurant objects where the average cost for two / 2 < money
             // Loop logic goes here***
+            for (let i = 0; i < 20; i++) {
+                var restaurant = res.restaurants[i].restaurant;
+                var costForOne = restaurant.average_cost_for_two / 2;
+                if (costForOne < money) {
+                    filteredRestaurants.push(restaurant);
+                }
+            }
+
             // After this, assign the result to the global variable restaurantList
             restaurantList = filteredRestaurants;
             generateMap();
