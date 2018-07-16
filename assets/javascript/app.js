@@ -22,4 +22,12 @@ Process (what happens when a user Submits)
             to a particular distance from the user's address or zip code?
     - Populate a scrollable list of these restaurants with their locations and distance (?)
     - Display the map adjacent to the input form
+
+
+### As written, this process does not require Firebase. We might remove Firebase from the implementation.
+### OR, if we get done with the core functionality with time to spare:
+    - Using a modal, prompt the user if they want to enter a username to retain their searches
+    - If the username/email they enter matches a previous entry in the database, give them their last X searches
+        they can pre-select and get those same results back.
+    - Store search parameters under that username for them to return to later
 */
