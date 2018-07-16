@@ -25,6 +25,23 @@
     #btn btn-primary{font-size: 29%};
 }
 
+.hide{
+    display: none;
+}
+
+#map{
+    width: 80%;
+    height: 80%;
+    margin: 0 auto;
+}
+
+.list-group{
+    width: 80%;
+    margin: 0 auto;
+    height: 80%;
+}
+
+
 
 
 
