@@ -114,10 +114,14 @@ function getRestaurants(money, city, zip) {
             // Iterating through restaurant objects, push all restaurant objects where the average cost for two / 2 < money
             // Loop logic goes here***
             for (let i = 0; i < 20; i++) {
+                if (res.restaurants[i] === undefined) {
+                    break;
+                }
+
                 var restaurant = res.restaurants[i].restaurant;
                 var costForOne = restaurant.average_cost_for_two / 2;
-                if (costForOne < money) {
-                    filteredRestaurants.push(restaurant);
+                if (costForOne <= money && costForOne !== 0) {
+                    
                 }
             }
 
@@ -126,6 +130,16 @@ function getRestaurants(money, city, zip) {
             generateMap();
         });
     });
+}
+
+function generateMap() {
+
+    // Create a map object using Bing Maps API
+
+    // For each restaurant object in restaurantList, create a pushpin on the map with the address
+
+    // Once complete, append that map to HTML
+
 }
 
 function generateList() {
@@ -138,16 +152,6 @@ function generateList() {
     // * Restaurant address
     // * If possible - using a Bing Maps method/function, the distance between restaurant and provided zip code
     // Append each div to our container for results in HTML
-}
-
-function generateMap() {
-
-    // Create a map object using Bing Maps API
-
-    // For each restaurant object in restaurantList, create a pushpin on the map with the address
-
-    // Once complete, append that map to HTML
-
 }
 
 
