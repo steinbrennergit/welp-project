@@ -102,7 +102,7 @@ function getRestaurants(money, city, zip) {
                 let restaurant = res.restaurants[i].restaurant;
                 let costForOne = restaurant.average_cost_for_two / 2;
                 if (costForOne <= money && costForOne !== 0) {
-
+                    filteredRestaurants.push(restaurant)
                 }
             }
 
@@ -166,7 +166,7 @@ function generateList() {
         $("#column-group").append(NewAnchor)
 
     }
-    $("#hidden-valley").removeClass("hide")
+    $("#column-group").removeClass("hide")
     // Create an HTML element (div)
     // Append to the div:
     // * Restaurant name - Link to the restaurant website?
