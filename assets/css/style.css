@@ -56,8 +56,8 @@ body {
 }
 
 #map-div {
-    width: 480px;
-    height: 480px;
+    width: 80%;
+    height: 80%;
     margin: 0 auto;
 }
 
@@ -69,3 +69,10 @@ body {
  #column-group{
      font-family: Merienda, cursive;
  }
+.restaurant{
+    width: 40%;
+}
+
+.list-group-item {
+    background-color: darkgrey;
+}
