@@ -5,6 +5,7 @@
     margin-top: 10%;
     padding-top: 10px;
     background-color: darkgray;
+    opacity: 0.8;
 }
  body {
     font-family: 'Rock Salt', cursive; 
@@ -41,8 +42,6 @@
     margin: 0 auto;
     height: 80%;
 }
-
-
 
 
 
