@@ -43,6 +43,10 @@ const $map = $("#map-div");
 const $results = $("#results");
 
 // Global vars
+var isSignedIn = false;
+var userEmail = "";
+var dir = "/";
+
 var userCity = null; // NOT IN USE
 var restaurantList = [];
 
@@ -52,6 +56,10 @@ $("#submit-button").on("click", function () {
     let money = parseInt($money.val().trim());
     let city = $city.val().trim();
     let zip = $zip.val().trim();
+
+    if (isSignedIn) {
+        db.ref(dir).push({money, city, zip});
+    }
 
     getRestaurants(money, city, zip);
 });
@@ -206,6 +214,12 @@ $("#login").on("click", function () {
 firebase.auth().onAuthStateChanged(function(user) {
     if (user) {
         console.log(user);
+        isSignedIn = true;
+        userEmail = user.email;
+        dir += user.uid;
     }
 });
 
+db.ref(dir).on("child_added", function (snap) {
+    console.log(snap.val());
+});

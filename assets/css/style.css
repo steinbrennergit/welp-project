@@ -6,11 +6,9 @@
     background-color: darkgray;
     opacity: 0.8;
 }
-
 a, a:hover, a:visited {
     color: #fff;
 }
-
 body {
     font-family: 'Rock Salt', cursive;
     background-image: url(pexels-photo-259165.jpeg);
@@ -62,7 +60,6 @@ body {
     width: 80%;
     height: 80%;
     margin: 0 auto;
-    top: 20px;
 }
 
 .list-group {
@@ -72,11 +69,8 @@ body {
 }
  #column-group{
      font-family: Merienda, cursive;
+     
  }
-.restaurant{
-    width: 40%;
-}
 
-.list-group-item {
-    background-color: darkgrey;
-}
+
+
