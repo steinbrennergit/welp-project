@@ -69,8 +69,10 @@ function getRestaurants(money, city, zip) {
     }).then(function (res) {
         // Res should contain an object for the city, with an id
 
-        console.log(res)
+        // console.log(res)
+
         var id = res.location_suggestions["0"].id; // Set this to the restaurant id provided by the object
+
 
         var secondQueryURL = "https://developers.zomato.com/api/v2.1/search?apikey=284d8bf6da6b7fc3efc07100c1246454&entity_type=city&sort=cost&order=asc&entity_id=" + id // Add parameters to this URL
 
@@ -86,7 +88,7 @@ function getRestaurants(money, city, zip) {
         }).then(function (res) {
             // Res should contain an object containing up to 20 restaurant objects, sorted by cost
             // If we want more than 20, we would call again with an offset - don't worry about this right now
-
+          
             // console.log(res)
             let filteredRestaurants = []
 
@@ -100,13 +102,15 @@ function getRestaurants(money, city, zip) {
                 let restaurant = res.restaurants[i].restaurant;
                 let costForOne = restaurant.average_cost_for_two / 2;
                 if (costForOne <= money && costForOne !== 0) {
-
+                    filteredRestaurants.push(restaurant);
                 }
             }
 
             // After this, assign the result to the global variable restaurantList
             restaurantList = filteredRestaurants;
             generateMap();
+            generateList();
+            $("#first-window").addClass("hide");
         });
     });
 }
@@ -119,7 +123,11 @@ function generateMap() {
 
     // Remove the hide class from map-div
 
-    var map = new Microsoft.Maps.Map("#map-div", {});
+    // var rect = new LocationRect(400, 400);
+
+    var map = new Microsoft.Maps.Map("#map-div", {showLocateMeButton: false});
+
+    var centerLoc;
 
     for (let i = 0; i < restaurantList.length; i++) {
 
@@ -129,14 +137,52 @@ function generateMap() {
         var loc = new Microsoft.Maps.Location(latitude, longitude);
         var pin = new Microsoft.Maps.Pushpin(loc);
         map.entities.push(pin);
+
+        if (i === 0) {
+            centerLoc = new Microsoft.Maps.Location(latitude, longitude); 
+        }
     };
+
+    console.log(latitude, longitude);
+    map.setView({
+        mapTypeId: Microsoft.Maps.MapTypeId.road,
+        center: centerLoc,
+        zoom: 10
+    });
 
     $("#map-div").removeClass("hide");
 }
 
 function generateList() {
+    if (restaurantList.length === 0) {
+        console.log("empty list")
+        return
+    }
     // For each restaurant object (LOOP)
+    for (let i = 0; i < restaurantList.length; i++) {
+        //create a new anchor tag append the res lists
+        var NewAnchor = $("<a>").attr("class", "list-group-item list-group-item-action flex-column align-items-start active");
+        NewAnchor.attr("href", "#")
+        // console.log(NewAnchor);
+        //Create new div to add the data into
+        var newDiv = $("<div>").attr("class", "d-flex w-100 justify-content-between")
+    
+        //Adds the restaurnaunt name in the drop down
+        var newName = $("<h5>").addClass("mb-1")
+        newName.text(restaurantList[i].name)
 
+        //Adds the address into the same dropdown box
+        var newAddress = $("<p>").addClass("mb-1")
+        newAddress.text(restaurantList[i].location.address)
+
+        newDiv.append(newName, newAddress);
+        // console.log(newDiv);
+
+        NewAnchor.append(newDiv);
+        $("#column-group").append(NewAnchor)
+
+    }
+    $("#column-group").removeClass("hide")
     // Create an HTML element (div)
     // Append to the div:
     // * Restaurant name - Link to the restaurant website?
