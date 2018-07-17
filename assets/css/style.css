@@ -55,9 +55,9 @@ body {
     padding: 0 16px;
 }
 
-#map {
-    width: 80%;
-    height: 80%;
+#map-div {
+    width: 480px;
+    height: 480px;
     margin: 0 auto;
 }
 

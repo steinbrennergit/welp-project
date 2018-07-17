@@ -69,7 +69,7 @@ function getRestaurants(money, city, zip) {
     }).then(function (res) {
         // Res should contain an object for the city, with an id
 
-        console.log(res)
+        // console.log(res)
 
         var id = res.location_suggestions["0"].id; // Set this to the restaurant id provided by the object
 
@@ -102,14 +102,15 @@ function getRestaurants(money, city, zip) {
                 let restaurant = res.restaurants[i].restaurant;
                 let costForOne = restaurant.average_cost_for_two / 2;
                 if (costForOne <= money && costForOne !== 0) {
-                    filteredRestaurants.push(restaurant)
+                    filteredRestaurants.push(restaurant);
                 }
             }
 
             // After this, assign the result to the global variable restaurantList
             restaurantList = filteredRestaurants;
             generateMap();
-            generateList()
+            generateList();
+            $("#first-window").addClass("hide");
         });
     });
 }
@@ -122,7 +123,11 @@ function generateMap() {
 
     // Remove the hide class from map-div
 
-    var map = new Microsoft.Maps.Map("#map-div", {});
+    // var rect = new LocationRect(400, 400);
+
+    var map = new Microsoft.Maps.Map("#map-div", {showLocateMeButton: false});
+
+    var centerLoc;
 
     for (let i = 0; i < restaurantList.length; i++) {
 
@@ -132,7 +137,18 @@ function generateMap() {
         var loc = new Microsoft.Maps.Location(latitude, longitude);
         var pin = new Microsoft.Maps.Pushpin(loc);
         map.entities.push(pin);
+
+        if (i === 0) {
+            centerLoc = new Microsoft.Maps.Location(latitude, longitude); 
+        }
     };
+
+    console.log(latitude, longitude);
+    map.setView({
+        mapTypeId: Microsoft.Maps.MapTypeId.road,
+        center: centerLoc,
+        zoom: 10
+    });
 
     $("#map-div").removeClass("hide");
 }
@@ -147,7 +163,7 @@ function generateList() {
         //create a new anchor tag append the res lists
         var NewAnchor = $("<a>").attr("class", "list-group-item list-group-item-action flex-column align-items-start active");
         NewAnchor.attr("href", "#")
-        console.log(NewAnchor);
+        // console.log(NewAnchor);
         //Create new div to add the data into
         var newDiv = $("<div>").attr("class", "d-flex w-100 justify-content-between")
     
@@ -160,7 +176,7 @@ function generateList() {
         newAddress.text(restaurantList[i].location.address)
 
         newDiv.append(newName, newAddress);
-        console.log(newDiv);
+        // console.log(newDiv);
 
         NewAnchor.append(newDiv);
         $("#column-group").append(NewAnchor)
