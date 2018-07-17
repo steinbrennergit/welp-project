@@ -203,12 +203,9 @@ $("#login").on("click", function () {
     firebase.auth().signInWithEmailAndPassword(em, pw).catch(function (error) { console.log(error); });
 });
 
-<<<<<<< HEAD
-=======
 firebase.auth().onAuthStateChanged(function(user) {
     if (user) {
         console.log(user);
     }
 });
 
->>>>>>> 171b7cea56e0b2455fdbd7396ffb045efa5985f2
