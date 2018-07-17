@@ -69,7 +69,7 @@ function getRestaurants(money, city, zip) {
     }).then(function (res) {
         // Res should contain an object for the city, with an id
 
-        console.log(res)
+        // console.log(res)
 
         var id = res.location_suggestions["0"].id; // Set this to the restaurant id provided by the object
 
@@ -102,7 +102,7 @@ function getRestaurants(money, city, zip) {
                 let restaurant = res.restaurants[i].restaurant;
                 let costForOne = restaurant.average_cost_for_two / 2;
                 if (costForOne <= money && costForOne !== 0) {
-
+                    filteredRestaurants.push(restaurant);
                 }
             }
 
@@ -147,7 +147,7 @@ function generateList() {
         //create a new anchor tag append the res lists
         var NewAnchor = $("<a>").attr("class", "list-group-item list-group-item-action flex-column align-items-start active");
         NewAnchor.attr("href", "#")
-        console.log(NewAnchor);
+        // console.log(NewAnchor);
         //Create new div to add the data into
         var newDiv = $("<div>").attr("class", "d-flex w-100 justify-content-between")
     
@@ -160,13 +160,13 @@ function generateList() {
         newAddress.text(restaurantList[i].location.address)
 
         newDiv.append(newName, newAddress);
-        console.log(newDiv);
+        // console.log(newDiv);
 
         NewAnchor.append(newDiv);
         $("#column-group").append(NewAnchor)
 
     }
-    $("#hidden-valley").removeClass("hide")
+    $("#column-group").removeClass("hide")
     // Create an HTML element (div)
     // Append to the div:
     // * Restaurant name - Link to the restaurant website?
