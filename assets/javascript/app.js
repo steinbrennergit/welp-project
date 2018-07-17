@@ -109,7 +109,8 @@ function getRestaurants(money, city, zip) {
             // After this, assign the result to the global variable restaurantList
             restaurantList = filteredRestaurants;
             generateMap();
-            generateList()
+            generateList();
+            $("#first-window").addClass("hide");
         });
     });
 }
@@ -122,7 +123,9 @@ function generateMap() {
 
     // Remove the hide class from map-div
 
-    var map = new Microsoft.Maps.Map("#map-div", {});
+    // var rect = new LocationRect(400, 400);
+
+    var map = new Microsoft.Maps.Map("#map-div", {showLocateMeButton: false, width: 400, height: 400});
 
     for (let i = 0; i < restaurantList.length; i++) {
 
