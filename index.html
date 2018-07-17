@@ -27,40 +27,52 @@
     <div class="container">
         <div class="row">
             <div class="col-sm-12">
-                <div class="jumbotron">
-                    <h1 class="display-4">Welp!</h1>
+
+                <div class="jumbotron container">
+                    <h1 class="display-4 text-center">Welp!</h1>
+
                     <form id="info-input">
                         <div class="form-group">
                             <label for="exampleInputEmail1">How much money do you have?</label>
-                            <input type="money" class="form-control" id="money" placeholder="$10.00">
+                            <div class="input-group">
+
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">$</span>
+                                </div>
+                                <input type="text" class="form-control" id="money" placeholder="10.00">
+                            </div>
                             <small id="text-box" class="form-text text-muted">It's ok if you're poor, so are we.......</small>
                         </div>
                         <div class="row">
 
-                            <div class="form-group">
-                                <label for="whereAreYou">Where are you?</label>
-                                <input type="location" class="form-control" id="city-location" placeholder="City" style="float: left;">
-                            </div>
-                            <div>
-                                <input type="location" class="form-control" id="zip-location" placeholder="Zip" style="float: right;">
+                            <label for="whereAreYou" id="pad-less">Where are you?</label>
+                            <div class="form-group row pad-sides">
+                                <input type="location" class="form-control col-8" id="city-location" placeholder="City">
+                                <input type="location" class="form-control col-4" id="zip-location" placeholder="Zip">
                             </div>
                         </div>
                         <br>
 
                         <!-- Button trigger modal -->
                         <!-- Move modal to the begining to collect user info, or for auth-->
-                        <button type ="button" id= "submit-button" class="btn btn-primary">submit</button>
-                        <button type="button" id="submit-button-2" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
-                            Login
-                        </button>
+                        <div>
+                            <button type="button" id="signin-button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+                                Sign In
+                            </button>
+                            <button type="button" id="submit-button" class="btn btn-success float-right">
+                                Search
+                            </button>
+                        </div>
+
                     </form>
                 </div>
             </div>
         </div>
     </div>
-    <div class="row hide" id="hidden-valley">
+
+    <div class="row">
         <div class="col-sm-6">
-            <div class="list-group" id="column-group">
+            <div class="list-group hide" id="column-group">
                 <a href="#" class="list-group-item list-group-item-action flex-column align-items-start active">
                     <div class="d-flex w-100 justify-content-between">
                         <h5 class="mb-1" id="name"></h5>
@@ -70,10 +82,10 @@
                 </a>
             </div>
         </div>
-        <div class="col-sm-6">
+        <div class="col-sm-6 hide" id="map-div">
             <img class="bing-map" id="map" src="https://img.etsystatic.com/il/289409/720708044/il_570xN.720708044_8vd9.jpg?version=1"
                 alt="">
-            </div>
+        </div>
     </div>
     <!-- Modal -->
     <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
