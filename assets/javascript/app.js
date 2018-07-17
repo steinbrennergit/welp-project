@@ -94,10 +94,10 @@ function getRestaurants(money, city, zip) {
         method: 'GET'
     }).then(function (res) {
         // Res should contain an object for the city, with an id
-    
+
         console.log(res)
         var id = res.location_suggestions["0"].id; // Set this to the id provided by the object
-      
+
         var secondQueryURL = "https://developers.zomato.com/api/v2.1/search?apikey=284d8bf6da6b7fc3efc07100c1246454&entity_type=city&sort=cost&order=asc&entity_id=" + id // Add parameters to this URL
 
         // Parameters:
@@ -115,17 +115,17 @@ function getRestaurants(money, city, zip) {
 
             console.log(res)
             var filteredRestaurants = []
-            
-            for (let i = 0; i < 20 ; i++) {
-                if (res.restaurants[i] === undefined ){
+
+            for (let i = 0; i < 20; i++) {
+                if (res.restaurants[i] === undefined) {
                     break
                 }
-                
+
                 var restaurant = res.restaurants[i].restaurant
                 var costforOne = restaurant.average_cost_for_two / 2;
                 if (costforOne <= money && costforOne !== 0) {
                     filteredRestaurants.push(restaurant)
-                    console.log(restaurant)
+                    //console.log(restaurant)
                 }
             }
             // Iterating through restaurant objects, push all restaurant objects where the average cost for two / 2 < money
@@ -138,13 +138,14 @@ function getRestaurants(money, city, zip) {
                 var restaurant = res.restaurants[i].restaurant;
                 var costForOne = restaurant.average_cost_for_two / 2;
                 if (costForOne <= money && costForOne !== 0) {
-                    
+
                 }
             }
 
             // After this, assign the result to the global variable restaurantList
             restaurantList = filteredRestaurants;
             generateMap();
+            generateList()
         });
     });
 }
@@ -160,8 +161,35 @@ function generateMap() {
 }
 
 function generateList() {
+    if (restaurantList.length === 0) {
+        console.log("empty list")
+        return
+    }
     // For each restaurant object (LOOP)
+    for (let i = 0; i < restaurantList.length; i++) {
+        //create a new anchor tag append the res lists
+        var NewAnchor = $("<a>").attr("class", "list-group-item list-group-item-action flex-column align-items-start active");
+        NewAnchor.attr("href", "#")
+        console.log(NewAnchor);
+        //Create new div to add the data into
+        var newDiv = $("<div>").attr("class", "d-flex w-100 justify-content-between")
+    
+        //Adds the restaurnaunt name in the drop down
+        var newName = $("<h5>").addClass("mb-1")
+        newName.text(restaurantList[i].name)
 
+        //Adds the address into the same dropdown box
+        var newAddress = $("<p>").addClass("mb-1")
+        newAddress.text(restaurantList[i].location.address)
+
+        newDiv.append(newName, newAddress);
+        console.log(newDiv);
+
+        NewAnchor.append(newDiv);
+        $("#column-group").append(NewAnchor)
+
+    }
+    $("#hidden-valley").removeClass("hide")
     // Create an HTML element (div)
     // Append to the div:
     // * Restaurant name - Link to the restaurant website?
