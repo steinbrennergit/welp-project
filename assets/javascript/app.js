@@ -165,31 +165,24 @@ function generateList() {
         NewAnchor.attr("href", "#")
         // console.log(NewAnchor);
         //Create new div to add the data into
-        var newDiv = $("<div>").attr("class", "d-flex w-100 justify-content-between restaurant")
-    
+        var newDiv = $("<div>").attr("class", "d-flex w-100 justify-content-between")
+
         //Adds the restaurnaunt name in the drop down
         var newName = $("<h5>").addClass("mb-1", "mb-name")
-        newName.text(restaurantList[i].name).css('text-align','left').css("padding-right", '20px')
+        newName.text(restaurantList[i].name).css('text-align', 'left').css("padding-right", '20px')
 
         //Adds the address into the same dropdown box
         var newAddress = $("<p>").addClass("mb-1", "mb-address")
-        newAddress.text(restaurantList[i].location.address).css('text-align','right').css("padding-left", '20px')
+        newAddress.text(restaurantList[i].location.address).css('text-align', 'right').css("padding-left", '20px')
 
         newDiv.append(newName, newAddress);
         // console.log(newDiv);
 
-        NewAnchor.append(newDiv).css("background-color", 'darkgrey').css("border-color", 'black')
+        NewAnchor.append(newDiv).css("background-color", 'darkgrey').css("border", '1px solid black')
         $("#column-group").append(NewAnchor)
 
     }
     $("#column-group").removeClass("hide")
-    // Create an HTML element (div)
-    // Append to the div:
-    // * Restaurant name - Link to the restaurant website?
-    // * Restaurant average cost (cost for 2 divided by 2)
-    // * Restaurant address
-    // * If possible - using a Bing Maps method/function, the distance between restaurant and provided zip code
-    // Append each div to our container for results in HTML
 }
 
 $("#signup").on("click", function () {
@@ -202,10 +195,17 @@ $("#signup").on("click", function () {
 });
 
 $("#login").on("click", function () {
-    event.preventDefault(); 
-    
+    event.preventDefault();
+
     let em = $("#email").val().trim();
     let pw = $("#password").val().trim();
 
     firebase.auth().signInWithEmailAndPassword(em, pw).catch(function (error) { console.log(error); });
 });
+
+firebase.auth().onAuthStateChanged(function(user) {
+    if (user) {
+        console.log(user);
+    }
+});
+
