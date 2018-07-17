@@ -147,7 +147,7 @@ function generateMap() {
     map.setView({
         mapTypeId: Microsoft.Maps.MapTypeId.road,
         center: centerLoc,
-        zoom: 10
+        zoom: 11.5
     });
 
     $("#map-div").removeClass("hide");
