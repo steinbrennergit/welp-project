@@ -1,29 +1,49 @@
-
-.jumbotron{
+.jumbotron {
     margin: 0% auto;
     max-width: 445px;
     margin-top: 10%;
     padding-top: 10px;
     background-color: darkgray;
 }
- body {
-    font-family: 'Rock Salt', cursive; 
+
+
+body {
+    font-family: 'Rock Salt', cursive;
     background-image: url(pexels-photo-259165.jpeg);
- }
-.display-4{
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.display-4 {
     border-bottom: 4px solid black;
     padding-bottom: 25px;
 }
-.modal-content{
+
+.modal-content {
     background-image: url(buy-cash-coins-9660.jpg)
 }
-.modal-footer{
+
+.modal-footer {
     background-color: midnightblue;
 }
+
 @media (max-width: 480px) {
-    .display-4{font-size: x-large};
-    #btn btn-primary{width: 50%};
-    #btn btn-primary{font-size: 29%};
+    .display-4 {
+        font-size: x-large
+    }
+    ;
+    #btn btn-primary {
+        width: 50%
+    }
+    ;
+    #btn btn-primary {
+        font-size: 29%
+    }
+    ;
+}
+
+.hide {
+    display: none;
 }
 
 .pad-sides {
@@ -34,24 +54,14 @@
     padding: 0 16px;
 }
 
-.hide{
-    display: none;
-}
-
-#map{
+#map {
     width: 80%;
     height: 80%;
     margin: 0 auto;
 }
 
-.list-group{
+.list-group {
     width: 80%;
     margin: 0 auto;
     height: 80%;
 }
-
-
-
-
-
-
