@@ -125,7 +125,9 @@ function generateMap() {
 
     // var rect = new LocationRect(400, 400);
 
-    var map = new Microsoft.Maps.Map("#map-div", {showLocateMeButton: false, width: 400, height: 400});
+    var map = new Microsoft.Maps.Map("#map-div", {showLocateMeButton: false});
+
+    var centerLoc;
 
     for (let i = 0; i < restaurantList.length; i++) {
 
@@ -135,7 +137,18 @@ function generateMap() {
         var loc = new Microsoft.Maps.Location(latitude, longitude);
         var pin = new Microsoft.Maps.Pushpin(loc);
         map.entities.push(pin);
+
+        if (i === 0) {
+            centerLoc = new Microsoft.Maps.Location(latitude, longitude); 
+        }
     };
+
+    console.log(latitude, longitude);
+    map.setView({
+        mapTypeId: Microsoft.Maps.MapTypeId.road,
+        center: centerLoc,
+        zoom: 10
+    });
 
     $("#map-div").removeClass("hide");
 }
