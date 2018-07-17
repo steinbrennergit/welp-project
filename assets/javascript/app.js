@@ -29,32 +29,6 @@ Process (what happens when a user Submits)
     - Store search parameters under that username for them to return to later
 */
 
-/***********JEFF'S CODE*******************/
-// var config = {
-//     apiKey: "AIzaSyATWzOdMstZlUPbb9P7XJgg60zt0e6-ppQ",
-//     authDomain: "stuffandjunk-13b4b.firebaseapp.com",
-//     databaseURL: "https://stuffandjunk-13b4b.firebaseio.com",
-//     projectId: "stuffandjunk-13b4b",
-//     storageBucket: "stuffandjunk-13b4b.appspot.com",
-//     messagingSenderId: "842764135029"
-// };
-// var app = firebase.initializeApp(config);
-//
-// var ref = firebase.database().ref("bidderData")
-// ref.once("value")
-//     .then(function (snapshot) {
-//         var highBidder = snapshot.child("highBidder").val(); // {first:"Ada",last:"Lovelace"}\
-//         var highPrice = snapshot.child("highPrice").val();
-//         snapshot.child().push({"key":"ipVal"})
-//        // $.getJSON("https://api.ipify.org?format=jsonp&callback=?",
-//            // function (json) {
-//                // console.log("My public IP address is: ", json.ip);
-//             //}
-//         //);
-//     });
-/***********JEFF'S CODE*******************/
-
-
 
 /***********PRODUCTION CODE***************/
 firebase.initializeApp(fbConfig);
@@ -68,13 +42,13 @@ const $map = $("#map-div");
 const $results = $("#results");
 
 // Global vars
-var userCity = null;
-var restaurantList = [];
+var userCity = null; // NOT IN USE
+var restaurantList = []; 
 
 $("#submit-button").on("click", function () {
     event.preventDefault() // Prevents page from reloading on submit
 
-    let money = $money.val().trim();
+    let money = parseInt($money.val().trim());
     let city = $city.val().trim();
     let zip = $zip.val().trim();
 
@@ -96,7 +70,7 @@ function getRestaurants(money, city, zip) {
         // Res should contain an object for the city, with an id
 
         console.log(res)
-        var id = res.location_suggestions["0"].id; // Set this to the id provided by the object
+        var id = res.location_suggestions["0"].id; // Set this to the restaurant id provided by the object
 
         var secondQueryURL = "https://developers.zomato.com/api/v2.1/search?apikey=284d8bf6da6b7fc3efc07100c1246454&entity_type=city&sort=cost&order=asc&entity_id=" + id // Add parameters to this URL
 
@@ -113,21 +87,9 @@ function getRestaurants(money, city, zip) {
             // Res should contain an object containing up to 20 restaurant objects, sorted by cost
             // If we want more than 20, we would call again with an offset - don't worry about this right now
 
-            console.log(res)
-            var filteredRestaurants = []
+            // console.log(res)
+            let filteredRestaurants = []
 
-            for (let i = 0; i < 20; i++) {
-                if (res.restaurants[i] === undefined) {
-                    break
-                }
-
-                var restaurant = res.restaurants[i].restaurant
-                var costforOne = restaurant.average_cost_for_two / 2;
-                if (costforOne <= money && costforOne !== 0) {
-                    filteredRestaurants.push(restaurant)
-                    console.log(restaurant)
-                }
-            }
             // Iterating through restaurant objects, push all restaurant objects where the average cost for two / 2 < money
             // Loop logic goes here***
             for (let i = 0; i < 20; i++) {
@@ -135,8 +97,8 @@ function getRestaurants(money, city, zip) {
                     break;
                 }
 
-                var restaurant = res.restaurants[i].restaurant;
-                var costForOne = restaurant.average_cost_for_two / 2;
+                let restaurant = res.restaurants[i].restaurant;
+                let costForOne = restaurant.average_cost_for_two / 2;
                 if (costForOne <= money && costForOne !== 0) {
 
                 }
@@ -155,10 +117,11 @@ function generateMap() {
 
     // For each restaurant object in restaurantList, create a pushpin on the map with the address
 
-    // Once complete, append that map to HTML
-    var map = new Microsoft.Maps.Map('#myMap', {});
+    // Remove the hide class from map-div
 
-    for (let i = 0; i < restrauntList.length; i++) {
+    var map = new Microsoft.Maps.Map("#map-div", {});
+
+    for (let i = 0; i < restaurantList.length; i++) {
 
         var restaurant = restaurantList[i];
         var latitude = restaurant.location.latitude;
@@ -167,7 +130,8 @@ function generateMap() {
         var pin = new Microsoft.Maps.Pushpin(loc);
         map.entities.push(pin);
     };
-    $("#myMap").removeClass("hide");
+
+    $("#map-div").removeClass("hide");
 }
 
 function generateList() {
