@@ -7,6 +7,10 @@
     opacity: 0.8;
 }
 
+a, a:hover, a:visited {
+    color: #fff;
+}
+
 body {
     font-family: 'Rock Salt', cursive;
     background-image: url(pexels-photo-259165.jpeg);
@@ -58,6 +62,7 @@ body {
     width: 80%;
     height: 80%;
     margin: 0 auto;
+    top: 20px;
 }
 
 .list-group {
