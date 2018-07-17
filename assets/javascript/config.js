@@ -1,10 +1,10 @@
 var fbConfig = {
-    apiKey: "AIzaSyC2g-lR_OVeTpDZtdpS6gmEMGkdTQckwcE",
-    authDomain: "steinbrennerprojecttestbench.firebaseapp.com",
-    databaseURL: "https://steinbrennerprojecttestbench.firebaseio.com",
-    projectId: "steinbrennerprojecttestbench",
-    storageBucket: "steinbrennerprojecttestbench.appspot.com",
-    messagingSenderId: "623159719138"
+    apiKey: "AIzaSyA19vbzC1dGUbHUwfAzDOWCJ8doS9gXCGE",
+    authDomain: "welp-app.firebaseapp.com",
+    databaseURL: "https://welp-app.firebaseio.com",
+    projectId: "welp-app",
+    storageBucket: "",
+    messagingSenderId: "968923669389"
 };
 
 const zomatoAPI = "284d8bf6da6b7fc3efc07100c1246454";

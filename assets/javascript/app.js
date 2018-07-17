@@ -33,6 +33,7 @@ Process (what happens when a user Submits)
 /***********PRODUCTION CODE***************/
 firebase.initializeApp(fbConfig);
 const db = firebase.database();
+// console.log(db.ref());
 /*****************************************/
 // Constant HTML references
 const $money = $("#money");
@@ -43,7 +44,7 @@ const $results = $("#results");
 
 // Global vars
 var userCity = null; // NOT IN USE
-var restaurantList = []; 
+var restaurantList = [];
 
 $("#submit-button").on("click", function () {
     event.preventDefault() // Prevents page from reloading on submit
@@ -88,7 +89,7 @@ function getRestaurants(money, city, zip) {
         }).then(function (res) {
             // Res should contain an object containing up to 20 restaurant objects, sorted by cost
             // If we want more than 20, we would call again with an offset - don't worry about this right now
-          
+
             // console.log(res)
             let filteredRestaurants = []
 
@@ -125,7 +126,7 @@ function generateMap() {
 
     // var rect = new LocationRect(400, 400);
 
-    var map = new Microsoft.Maps.Map("#map-div", {showLocateMeButton: false});
+    var map = new Microsoft.Maps.Map("#map-div", { showLocateMeButton: false });
 
     var centerLoc;
 
@@ -139,11 +140,10 @@ function generateMap() {
         map.entities.push(pin);
 
         if (i === 0) {
-            centerLoc = new Microsoft.Maps.Location(latitude, longitude); 
+            centerLoc = new Microsoft.Maps.Location(latitude, longitude);
         }
     };
 
-    console.log(latitude, longitude);
     map.setView({
         mapTypeId: Microsoft.Maps.MapTypeId.road,
         center: centerLoc,
@@ -161,24 +161,24 @@ function generateList() {
     // For each restaurant object (LOOP)
     for (let i = 0; i < restaurantList.length; i++) {
         //create a new anchor tag append the res lists
-        var NewAnchor = $("<a>").attr("class", "list-group-item list-group-item-action flex-column align-items-start active");
+        var NewAnchor = $("<a>").attr("class", "flex-column align-items-start");
         NewAnchor.attr("href", "#")
         // console.log(NewAnchor);
         //Create new div to add the data into
-        var newDiv = $("<div>").attr("class", "d-flex w-100 justify-content-between")
+        var newDiv = $("<div>").attr("class", "d-flex w-100 justify-content-between restaurant")
     
         //Adds the restaurnaunt name in the drop down
-        var newName = $("<h5>").addClass("mb-1")
-        newName.text(restaurantList[i].name)
+        var newName = $("<h5>").addClass("mb-1", "mb-name")
+        newName.text(restaurantList[i].name).css('text-align','left').css("padding-right", '20px')
 
         //Adds the address into the same dropdown box
-        var newAddress = $("<p>").addClass("mb-1")
-        newAddress.text(restaurantList[i].location.address)
+        var newAddress = $("<p>").addClass("mb-1", "mb-address")
+        newAddress.text(restaurantList[i].location.address).css('text-align','right').css("padding-left", '20px')
 
         newDiv.append(newName, newAddress);
         // console.log(newDiv);
 
-        NewAnchor.append(newDiv);
+        NewAnchor.append(newDiv).css("background-color", 'darkgrey').css("border-color", 'black')
         $("#column-group").append(NewAnchor)
 
     }
@@ -191,3 +191,21 @@ function generateList() {
     // * If possible - using a Bing Maps method/function, the distance between restaurant and provided zip code
     // Append each div to our container for results in HTML
 }
+
+$("#signup").on("click", function () {
+    event.preventDefault();
+
+    let em = $("#email").val().trim();
+    let pw = $("#password").val().trim();
+
+    firebase.auth().createUserWithEmailAndPassword(em, pw).catch(function (error) { console.log(error); });
+});
+
+$("#login").on("click", function () {
+    event.preventDefault(); 
+    
+    let em = $("#email").val().trim();
+    let pw = $("#password").val().trim();
+
+    firebase.auth().signInWithEmailAndPassword(em, pw).catch(function (error) { console.log(error); });
+});
