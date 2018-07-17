@@ -165,20 +165,20 @@ function generateList() {
         NewAnchor.attr("href", "#")
         // console.log(NewAnchor);
         //Create new div to add the data into
-        var newDiv = $("<div>").attr("class", "d-flex w-100 justify-content-between")
-
+        var newDiv = $("<div>").attr("class", "d-flex w-100 justify-content-between restaurant")
+    
         //Adds the restaurnaunt name in the drop down
-        var newName = $("<h5>").addClass("mb-1")
-        newName.text(restaurantList[i].name)
+        var newName = $("<h5>").addClass("mb-1", "mb-name")
+        newName.text(restaurantList[i].name).css('text-align','left').css("padding-right", '20px')
 
         //Adds the address into the same dropdown box
-        var newAddress = $("<p>").addClass("mb-1")
-        newAddress.text(restaurantList[i].location.address)
+        var newAddress = $("<p>").addClass("mb-1", "mb-address")
+        newAddress.text(restaurantList[i].location.address).css('text-align','right').css("padding-left", '20px')
 
         newDiv.append(newName, newAddress);
         // console.log(newDiv);
 
-        NewAnchor.append(newDiv);
+        NewAnchor.append(newDiv).css("background-color", 'darkgrey').css("border-color", 'black')
         $("#column-group").append(NewAnchor)
 
     }
