@@ -79,6 +79,7 @@ a, a:hover, a:visited {
     background-color: darkgrey;
     margin: 0 auto;
     opacity: 0.80;
+    font-size: 12pt;
 }
 
 #dropdown{
@@ -97,3 +98,20 @@ a, a:hover, a:visited {
     font-family: Merienda, cursive;
 }
 
+.search{
+    font-family: Merienda, cursive;
+    border: 1px, black;
+    font-size: 14px; 
+}
+
+.new-search{
+    color: black;
+    background-color: darkgrey;
+    margin: 0 auto;
+    opacity: 0.80;
+    display: block;
+    padding: .5rem 1rem;
+    float: left;
+    border: none;
+    font-size: 12pt;
+}
