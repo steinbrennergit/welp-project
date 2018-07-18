@@ -159,6 +159,8 @@ function generateMap() {
     for (let i = 0; i < restaurantList.length; i++) {
 
         var restaurant = restaurantList[i];
+        // console.log(restaurant);
+
         var latitude = restaurant.location.latitude;
         var longitude = restaurant.location.longitude;
         var loc = new Microsoft.Maps.Location(latitude, longitude);
@@ -166,11 +168,49 @@ function generateMap() {
         // textbox
         // console.log(restaurant)
         var infobox = new Microsoft.Maps.Infobox(loc, {
-            title: restaurant.name,
-            description: restaurant.location.address,
-    
+            visible: false, autoAlignment: true
         });
         infobox.setMap(map);
+
+        pin.metadata = {
+            title: restaurant.name,
+            description: restaurant.location.address,
+            rating: restaurant.user_rating.aggregate_rating // check obj path
+        };
+
+        Microsoft.Maps.Events.addHandler(pin, 'click', function (args) {
+            // console.log(args.target);
+            let tar = args.target;
+            let pinLoc = new Microsoft.Maps.Location(tar.geometry.y, tar.geometry.x);
+            infobox.setOptions({
+                location: pinLoc,
+                title: tar.metadata.title,
+                description: tar.metadata.description,
+                rating: tar.metadata.rating, // need to attach rating to description
+                visible: true
+            });
+        });
+
+        Microsoft.Maps.Events.addHandler(pin, 'mouseover', function (args) {
+            // console.log(args.target);
+            let tar = args.target;
+            let pinLoc = new Microsoft.Maps.Location(tar.geometry.y, tar.geometry.x);
+            infobox.setOptions({
+                location: pinLoc,
+                title: tar.metadata.title,
+                description: tar.metadata.description,
+                rating: tar.metadata.rating, // need to attach rating to description
+                visible: true
+            });
+        });
+
+        Microsoft.Maps.Events.addHandler(pin, 'mouseout', function (args) {
+            // console.log(args.target);
+            infobox.setOptions({
+                visible: false
+            });
+        });
+
         // textbox
         map.entities.push(pin);
 
@@ -188,9 +228,10 @@ function generateMap() {
     $("#map-div").removeClass("hide");
 }
 
+
 function generateList() {
     if (restaurantList.length === 0) {
-        console.log("empty list")
+        // console.log("empty list")
         return
     }
     // For each restaurant object (LOOP)
@@ -270,6 +311,7 @@ firebase.auth().onAuthStateChanged(function (user) {
 });
 
 db.ref(dir).on("child_added", function (snap) {
+    console.log(dir);
     console.log(snap.val());
 });
 
