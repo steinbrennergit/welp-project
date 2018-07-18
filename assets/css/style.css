@@ -1,6 +1,6 @@
 body {
     font-family: 'Rock Salt', cursive;
-    background-image: url(bgimage2.jpg);
+    background-image: url(bgimage.jpg);
 }
 
 .jumbotron {
@@ -19,10 +19,6 @@ a, a:hover, a:visited {
 .display-4 {
     border-bottom: 4px solid black;
     padding-bottom: 25px;
-}
-
-.modal-content {
-    background-image: url(buy-cash-coins-9660.jpg)
 }
 
 .modal-footer {
