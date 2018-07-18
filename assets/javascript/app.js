@@ -44,6 +44,7 @@ const $map = $("#map-div");
 const $results = $("#results");
 
 // Global vars
+var numOfRecentSearches = 0;
 var isSignedIn = false;
 var userEmail = "";
 var dir = "/";
@@ -150,7 +151,7 @@ function generateMap() {
         var loc = new Microsoft.Maps.Location(latitude, longitude);
         var pin = new Microsoft.Maps.Pushpin(loc);
         // textbox
-      
+
         // console.log(restaurant)
         var infobox = new Microsoft.Maps.Infobox(loc, {
             visible: false, autoAlignment: true
@@ -188,7 +189,7 @@ function generateMap() {
                 visible: true
             });
         });
-      
+
         Microsoft.Maps.Events.addHandler(pin, 'mouseout', function (args) {
             // console.log(args.target);
             infobox.setOptions({
@@ -293,17 +294,28 @@ firebase.auth().onAuthStateChanged(function (user) {
         dir += user.uid;
 
         db.ref(dir).on("child_added", function (snap) {
-            console.log(dir);
-            console.log(snap.val());
+            // console.log(dir);
+            // console.log(snap.val());
+
+            if (numOfRecentSearches >= 10) {
+                return;
+            }
+
+            let c = snap.val().city;
+            let z = snap.val().zip;
+            let m = snap.val().money;
+
+            let $past = $("#past-searches");
+            let newP = $("<p>").addClass("search");
+            let text = c + ", " + z + ", $" + m
+            newP.attr("data-city", c);
+            newP.attr("data-zip", z);
+            newP.attr("data-money", m);
+            newP.text(text);
+            $past.append(newP);
+            numOfRecentSearches++;
+            console.log('numSearches: ' + numOfRecentSearches);
         });
     }
 });
 
-<<<<<<< HEAD
-=======
-db.ref(dir).on("child_added", function (snap) {
-    console.log(dir);
-    console.log(snap.val());
-});
-
->>>>>>> 5734d7712fe3a05b5e595acecb87814df9b51fad
