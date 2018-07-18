@@ -145,6 +145,14 @@ function generateMap() {
         var longitude = restaurant.location.longitude;
         var loc = new Microsoft.Maps.Location(latitude, longitude);
         var pin = new Microsoft.Maps.Pushpin(loc);
+        // textbox
+        console.log(restaurant)
+        var infobox = new Microsoft.Maps.Infobox(loc, {
+            title: restaurant.name,
+            description: restaurant.location.address, 
+        });
+        infobox.setMap(map);
+        // textbox
         map.entities.push(pin);
 
         if (i === 0) {
@@ -211,7 +219,7 @@ $("#login").on("click", function () {
     firebase.auth().signInWithEmailAndPassword(em, pw).catch(function (error) { console.log(error); });
 });
 
-firebase.auth().onAuthStateChanged(function(user) {
+firebase.auth().onAuthStateChanged(function (user) {
     if (user) {
         console.log(user);
         isSignedIn = true;

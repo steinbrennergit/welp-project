@@ -11,7 +11,7 @@ body {
     margin-top: 10%;
     padding-top: 10px;
     background-color: darkgray;
-    opacity: 0.8;
+    opacity: 0.9;
 }
 a, a:hover, a:visited {
     color: #fff;
@@ -77,10 +77,14 @@ a, a:hover, a:visited {
 #navbarDropdownMenuLink {
     color: black;
     background-color: darkgrey;
+    margin: 0 auto;
+    opacity: 0.80;
 }
 
 #dropdown{
-    color: black
+    color: black;
+    background-color: darkgrey;
+    opacity: 0.80;
 }
 
 
