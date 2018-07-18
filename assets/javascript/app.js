@@ -191,7 +191,6 @@ function generateMap() {
             });
         });
 
-
         Microsoft.Maps.Events.addHandler(pin, 'mouseover', function (args) {
             // console.log(args.target);
             let tar = args.target;
@@ -207,13 +206,7 @@ function generateMap() {
 
         Microsoft.Maps.Events.addHandler(pin, 'mouseout', function (args) {
             // console.log(args.target);
-            let tar = args.target;
-            let pinLoc = new Microsoft.Maps.Location(tar.geometry.y, tar.geometry.x);
             infobox.setOptions({
-                location: pinLoc,
-                title: tar.metadata.title,
-                description: tar.metadata.description,
-                rating: tar.metadata.rating, // need to attach rating to description
                 visible: false
             });
         });
