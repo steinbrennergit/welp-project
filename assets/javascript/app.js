@@ -314,3 +314,4 @@ db.ref(dir).on("child_added", function (snap) {
     console.log(dir);
     console.log(snap.val());
 });
+
