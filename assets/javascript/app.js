@@ -35,6 +35,24 @@ firebase.initializeApp(fbConfig);
 const db = firebase.database();
 // console.log(db.ref());
 /*****************************************/
+
+
+/*
+var user = firebase.auth().currentUser;
+var name, email, photoUrl, uid, emailVerified;
+
+if (user != null) {
+  name = user.displayName;
+  email = user.email;
+  photoUrl = user.photoURL;
+  emailVerified = user.emailVerified;
+  uid = user.uid;  // The user's ID, unique to the Firebase project. Do NOT use
+                   // this value to authenticate with your backend server, if
+                   // you have one. Use User.getToken() instead.
+}
+
+*/
+
 // Constant HTML references
 const $money = $("#money");
 const $city = $("#city-location");
@@ -43,6 +61,10 @@ const $map = $("#map-div");
 const $results = $("#results");
 
 // Global vars
+var isSignedIn = false;
+var userEmail = "";
+var dir = "/";
+
 var userCity = null; // NOT IN USE
 var restaurantList = [];
 
@@ -52,6 +74,10 @@ $("#submit-button").on("click", function () {
     let money = parseInt($money.val().trim());
     let city = $city.val().trim();
     let zip = $zip.val().trim();
+
+    if (isSignedIn) {
+        db.ref(dir).push({ money, city, zip });
+    }
 
     getRestaurants(money, city, zip);
 });
@@ -133,35 +159,58 @@ function generateMap() {
     for (let i = 0; i < restaurantList.length; i++) {
 
         var restaurant = restaurantList[i];
+        // console.log(restaurant);
+
         var latitude = restaurant.location.latitude;
         var longitude = restaurant.location.longitude;
         var loc = new Microsoft.Maps.Location(latitude, longitude);
         var pin = new Microsoft.Maps.Pushpin(loc);
         // textbox
-        console.log(restaurant)
-        var infobox = new Microsoft.Maps.Infobox(pin, {
-            visible: false, autoAlignment: true,
+      
+        // console.log(restaurant)
+        var infobox = new Microsoft.Maps.Infobox(loc, {
+            visible: false, autoAlignment: true
         });
         infobox.setMap(map);
-
 
         pin.metadata = {
             title: restaurant.name,
             description: restaurant.location.address,
-            raiting: restaurant.user_rating.aggregate_rating
+            rating: restaurant.user_rating.aggregate_rating // check obj path
         };
 
-
         Microsoft.Maps.Events.addHandler(pin, 'click', function (args) {
+            // console.log(args.target);
+            let tar = args.target;
+            let pinLoc = new Microsoft.Maps.Location(tar.geometry.y, tar.geometry.x);
             infobox.setOptions({
-                location: args.target.pin,
-                title: args.target.metadata.title,
-                description: args.target.metadata.description,
-                rating: args.target.metadata.raiting,
+                location: pinLoc,
+                title: tar.metadata.title,
+                description: tar.metadata.description,
+                rating: tar.metadata.rating, // need to attach rating to description
                 visible: true
             });
         });
 
+        Microsoft.Maps.Events.addHandler(pin, 'mouseover', function (args) {
+            // console.log(args.target);
+            let tar = args.target;
+            let pinLoc = new Microsoft.Maps.Location(tar.geometry.y, tar.geometry.x);
+            infobox.setOptions({
+                location: pinLoc,
+                title: tar.metadata.title,
+                description: tar.metadata.description,
+                rating: tar.metadata.rating, // need to attach rating to description
+                visible: true
+            });
+        });
+      
+        Microsoft.Maps.Events.addHandler(pin, 'mouseout', function (args) {
+            // console.log(args.target);
+            infobox.setOptions({
+                visible: false
+            });
+        });
 
         // textbox
         map.entities.push(pin);
@@ -180,9 +229,10 @@ function generateMap() {
     $("#map-div").removeClass("hide");
 }
 
+
 function generateList() {
     if (restaurantList.length === 0) {
-        console.log("empty list")
+        // console.log("empty list")
         return
     }
     // For each restaurant object (LOOP)
@@ -212,27 +262,57 @@ function generateList() {
     $("#column-group").removeClass("hide")
 }
 
-$("#signup").on("click", function () {
-    event.preventDefault();
+$("#logout").on("click", function () {
 
-    let em = $("#email").val().trim();
-    let pw = $("#password").val().trim();
+    // Do nothing if not logged in 
+    if (!isSignedIn) {
+        return;
+    }
 
-    firebase.auth().createUserWithEmailAndPassword(em, pw).catch(function (error) { console.log(error); });
-});
+    firebase.auth().signOut().then(function () {
+        window.location.reload(true);
+    }).catch(function (error) { console.log(error) });
+})
 
 $("#login").on("click", function () {
     event.preventDefault();
 
+    // console.log(isSignedIn);
+
+    if (isSignedIn) {
+        firebase.auth().signOut().then(function () {
+            window.location.reload(true);
+        }).catch(function (error) { console.log(error) });
+    }
+
     let em = $("#email").val().trim();
     let pw = $("#password").val().trim();
 
-    firebase.auth().signInWithEmailAndPassword(em, pw).catch(function (error) { console.log(error); });
+    firebase.auth().signInWithEmailAndPassword(em, pw).then(function () {
+        window.location.reload(true);
+    }).catch(function (error) {
+        if (error.code === "auth/user-not-found") {
+            firebase.auth().createUserWithEmailAndPassword(em, pw).then(function () {
+                window.location.reload(true);
+            }).catch(function (error) { console.log(error); });
+        }
+        // Different catch needed for wrong password to notify user
+    });
+
 });
 
 firebase.auth().onAuthStateChanged(function (user) {
     if (user) {
         console.log(user);
+        isSignedIn = true;
+        userEmail = user.email;
+        $("#navbarDropdownMenuLink").text(userEmail);
+        dir += user.uid;
     }
+});
+
+db.ref(dir).on("child_added", function (snap) {
+    console.log(dir);
+    console.log(snap.val());
 });
 
