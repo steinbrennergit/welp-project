@@ -30,6 +30,7 @@ Process (what happens when a user Submits)
 */
 
 
+
 /***********PRODUCTION CODE***************/
 firebase.initializeApp(fbConfig);
 const db = firebase.database();
@@ -48,21 +49,51 @@ var numOfRecentSearches = 0;
 var isSignedIn = false;
 var userEmail = "";
 var dir = "/";
+var map;
 
-var userCity = null; // NOT IN USE
+var userLocation = null; // IF GEOLOCATED: BING LOCATION OBJECT
 var restaurantList = [];
 
 $("#submit-button").on("click", function () {
     event.preventDefault() // Prevents page from reloading on submit
 
     let money = parseInt($money.val().trim());
-    let city = $city.val().trim();
+
+    let tempCity = $city.val().trim();
+    let city = tempCity.charAt(0).toUpperCase() + tempCity.slice(1).toLowerCase();
+
     let zip = $zip.val().trim();
 
-    getRestaurants(money, city, zip);
+    // map = new Microsoft.Maps.Map("#map-div", { showLocateMeButton: false });
+
+    // var located = getLocation();
+
+    getRestaurants(money, city, zip, true);
 });
 
-function getRestaurants(money, city, zip) {
+/*
+function getLocation() {
+    navigator.geolocation.getCurrentPosition(function (pos) {
+        console.log("enter navigator")
+        // located = true;
+
+        userLocation = new Microsoft.Maps.Location(pos.coords.latitude, pos.coords.longitude);
+        console.log("navigator line 1");
+
+        let userPin = new Microsoft.Maps.Pushpin(userLocation);
+        console.log("navigator line 2");
+
+        map.entities.push(userPin);
+        console.log("navigator line 3");
+
+        map.setView({ center: userLocation, zoom: 11.5 });
+        console.log("navigator done");
+
+    });
+}
+*/
+
+function getRestaurants(money, city, zip, toPush) {
     let maxDist = 20;
 
     var firstQueryURL = "https://developers.zomato.com/api/v2.1/cities?q=" + city + "&apikey=284d8bf6da6b7fc3efc07100c1246454"
@@ -82,17 +113,11 @@ function getRestaurants(money, city, zip) {
             return;
         }
 
-        if (isSignedIn) {
+        if (isSignedIn && toPush) {
             db.ref(dir).push({ money, city, zip, userEmail });
         }
 
         var secondQueryURL = "https://developers.zomato.com/api/v2.1/search?apikey=284d8bf6da6b7fc3efc07100c1246454&entity_type=city&sort=cost&order=asc&entity_id=" + id // Add parameters to this URL
-
-        // Parameters:
-        // entity-id
-        // entity-type
-        // sort
-        // order
 
         $.ajax({
             url: secondQueryURL,
@@ -137,7 +162,7 @@ function generateMap() {
 
     // var rect = new LocationRect(400, 400);
 
-    var map = new Microsoft.Maps.Map("#map-div", { showLocateMeButton: false });
+    map = new Microsoft.Maps.Map("#map-div", { showLocateMeButton: false });
 
     var centerLoc;
 
@@ -156,12 +181,13 @@ function generateMap() {
         var infobox = new Microsoft.Maps.Infobox(loc, {
             visible: false, autoAlignment: true
         });
+
         infobox.setMap(map);
 
         pin.metadata = {
             title: restaurant.name,
             description: restaurant.location.address,
-            rating: restaurant.user_rating.aggregate_rating // check obj path
+            rating: restaurant.user_rating.aggregate_rating // not a property of metadata
         };
 
         Microsoft.Maps.Events.addHandler(pin, 'click', function (args) {
@@ -218,8 +244,9 @@ function generateMap() {
 function generateList() {
     if (restaurantList.length === 0) {
         // console.log("empty list")
-        return
+        return;
     }
+
     // For each restaurant object (LOOP)
     for (let i = 0; i < restaurantList.length; i++) {
         //create a new anchor tag append the res lists
@@ -307,15 +334,27 @@ firebase.auth().onAuthStateChanged(function (user) {
 
             let $past = $("#past-searches");
             let newP = $("<p>").addClass("search");
-            let text = c + ", " + z + ", $" + m
+            let text = c + ", " + z + ", $" + m;
             newP.attr("data-city", c);
             newP.attr("data-zip", z);
             newP.attr("data-money", m);
             newP.text(text);
             $past.append(newP);
             numOfRecentSearches++;
-            console.log('numSearches: ' + numOfRecentSearches);
+            // console.log('numSearches: ' + numOfRecentSearches);
         });
     }
+});
+
+$(document).on("click", ".search", function () {
+    // console.log(this);
+
+    let c = $(this).attr("data-city");
+    let z = $(this).attr("data-zip");
+    let m = $(this).attr("data-money");
+
+    $("#exampleModalCenter").modal("hide");
+
+    getRestaurants(m, c, z, false);
 });
 
