@@ -30,6 +30,7 @@
                 aria-expanded="false" style="float: right">
                 Guest User
             </a>
+            <button type="button" class="new-search" id="second-search">New Search</button>
             <div class="dropdown-menu" id="dropdown" aria-labelledby="navbarDropdownMenuLink">
                 <a class="dropdown-item" href="#" id="login-modal-button" data-toggle="modal" data-target="#exampleModal">Login</a>
                 <a class="dropdown-item" href="#" id="logout">Log Out</a>
@@ -70,10 +71,10 @@
                         <!-- Button trigger modal -->
                         <!-- Move modal to the begining to collect user info, or for auth-->
                         <div>
-                            <button type="button" id="signin-button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
-                                Sign In
+                            <button type="button" id="past-searches-button" class="btn btn-primary float-right" data-toggle="modal" data-target="#exampleModalCenter">
+                                Past Searches
                             </button>
-                            <button type="button" id="submit-button" class="btn btn-success float-right">
+                            <button type="button" id="submit-button" class="btn btn-success float-left">
                                 Search
                             </button>
                         </div>
@@ -122,8 +123,19 @@
         </div>
     </div>
 
-
-
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header"> 
+                    <h5 class="modal-title" id="exampleModalCenterTitle">Recent Searches</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div id="past-searches"></div>
+            </div>
+        </div>
+    </div>
 
     <!-- Firebase Reference -->
     <script src="https://www.gstatic.com/firebasejs/5.2.0/firebase.js"></script>
