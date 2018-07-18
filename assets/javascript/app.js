@@ -168,6 +168,7 @@ function generateMap() {
         var infobox = new Microsoft.Maps.Infobox(loc, {
             title: restaurant.name,
             description: restaurant.location.address,
+    
         });
         infobox.setMap(map);
         // textbox
@@ -271,3 +272,4 @@ firebase.auth().onAuthStateChanged(function (user) {
 db.ref(dir).on("child_added", function (snap) {
     console.log(snap.val());
 });
+
