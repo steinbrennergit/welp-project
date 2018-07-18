@@ -148,6 +148,7 @@ function getRestaurants(money, city, zip, toPush) {
             generateMap();
             generateList();
             $("#first-window").addClass("hide");
+            
         });
     });
 }
@@ -272,6 +273,7 @@ function generateList() {
 
     }
     $("#column-group").removeClass("hide")
+    // Remove hide from new search button
 }
 
 $("#logout").on("click", function () {
