@@ -302,7 +302,7 @@ $("#login").on("click", function () {
 
 firebase.auth().onAuthStateChanged(function (user) {
     if (user) {
-        // console.log(user);
+        console.log(user);
         isSignedIn = true;
         userEmail = user.email;
         $("#navbarDropdownMenuLink").text(userEmail);
@@ -311,5 +311,6 @@ firebase.auth().onAuthStateChanged(function (user) {
 });
 
 db.ref(dir).on("child_added", function (snap) {
-    // console.log(snap.val());
+    console.log(dir);
+    console.log(snap.val());
 });
