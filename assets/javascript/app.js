@@ -139,11 +139,30 @@ function generateMap() {
         var pin = new Microsoft.Maps.Pushpin(loc);
         // textbox
         console.log(restaurant)
-        var infobox = new Microsoft.Maps.Infobox(loc, {
-            title: restaurant.name,
-            description: restaurant.location.address, 
+        var infobox = new Microsoft.Maps.Infobox(pin, {
+            visible: false, autoAlignment: true,
         });
         infobox.setMap(map);
+
+
+        pin.metadata = {
+            title: restaurant.name,
+            description: restaurant.location.address,
+            raiting: restaurant.user_rating.aggregate_rating
+        };
+
+
+        Microsoft.Maps.Events.addHandler(pin, 'click', function (args) {
+            infobox.setOptions({
+                location: args.target.pin,
+                title: args.target.metadata.title,
+                description: args.target.metadata.description,
+                rating: args.target.metadata.raiting,
+                visible: true
+            });
+        });
+
+
         // textbox
         map.entities.push(pin);
 
