@@ -36,23 +36,6 @@ const db = firebase.database();
 // console.log(db.ref());
 /*****************************************/
 
-
-/*
-var user = firebase.auth().currentUser;
-var name, email, photoUrl, uid, emailVerified;
-
-if (user != null) {
-  name = user.displayName;
-  email = user.email;
-  photoUrl = user.photoURL;
-  emailVerified = user.emailVerified;
-  uid = user.uid;  // The user's ID, unique to the Firebase project. Do NOT use
-                   // this value to authenticate with your backend server, if
-                   // you have one. Use User.getToken() instead.
-}
-
-*/
-
 // Constant HTML references
 const $money = $("#money");
 const $city = $("#city-location");
@@ -75,16 +58,11 @@ $("#submit-button").on("click", function () {
     let city = $city.val().trim();
     let zip = $zip.val().trim();
 
-    if (isSignedIn) {
-        db.ref(dir).push({ money, city, zip });
-    }
-
     getRestaurants(money, city, zip);
 });
 
 function getRestaurants(money, city, zip) {
     let maxDist = 20;
-
 
     var firstQueryURL = "https://developers.zomato.com/api/v2.1/cities?q=" + city + "&apikey=284d8bf6da6b7fc3efc07100c1246454"
     // Parameters:
@@ -96,10 +74,16 @@ function getRestaurants(money, city, zip) {
     }).then(function (res) {
         // Res should contain an object for the city, with an id
 
-        // console.log(res)
-
         var id = res.location_suggestions["0"].id; // Set this to the restaurant id provided by the object
 
+        if (id === undefined) {
+            console.log("No restaurants found; return (notify user)");
+            return;
+        }
+
+        if (isSignedIn) {
+            db.ref(dir).push({ money, city, zip, userEmail });
+        }
 
         var secondQueryURL = "https://developers.zomato.com/api/v2.1/search?apikey=284d8bf6da6b7fc3efc07100c1246454&entity_type=city&sort=cost&order=asc&entity_id=" + id // Add parameters to this URL
 
@@ -297,20 +281,20 @@ $("#login").on("click", function () {
         }
         // Different catch needed for wrong password to notify user
     });
-
 });
 
 firebase.auth().onAuthStateChanged(function (user) {
     if (user) {
-        console.log(user);
+        console.log("signed in");
         isSignedIn = true;
         userEmail = user.email;
         $("#navbarDropdownMenuLink").text(userEmail);
         dir += user.uid;
+
+        db.ref(dir).on("child_added", function (snap) {
+            console.log(dir);
+            console.log(snap.val());
+        });
     }
 });
 
-db.ref(dir).on("child_added", function (snap) {
-    console.log(dir);
-    console.log(snap.val());
-});
