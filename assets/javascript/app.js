@@ -166,6 +166,7 @@ function generateMap() {
         var loc = new Microsoft.Maps.Location(latitude, longitude);
         var pin = new Microsoft.Maps.Pushpin(loc);
         // textbox
+      
         // console.log(restaurant)
         var infobox = new Microsoft.Maps.Infobox(loc, {
             visible: false, autoAlignment: true
@@ -203,7 +204,7 @@ function generateMap() {
                 visible: true
             });
         });
-
+      
         Microsoft.Maps.Events.addHandler(pin, 'mouseout', function (args) {
             // console.log(args.target);
             infobox.setOptions({
