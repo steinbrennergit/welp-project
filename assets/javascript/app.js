@@ -72,6 +72,7 @@ function getLocation() {
 */
 /**** END GEOLOCATION ****/
 
+// Using user input, get restaurant information from the Zomato API, store in array
 function getRestaurants(money, city, zip, toPush) {
     // let maxDist = 20; // NOT CURRENTLY IN USE
 
