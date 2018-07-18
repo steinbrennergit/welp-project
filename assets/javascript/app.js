@@ -35,6 +35,24 @@ firebase.initializeApp(fbConfig);
 const db = firebase.database();
 // console.log(db.ref());
 /*****************************************/
+
+
+/*
+var user = firebase.auth().currentUser;
+var name, email, photoUrl, uid, emailVerified;
+
+if (user != null) {
+  name = user.displayName;
+  email = user.email;
+  photoUrl = user.photoURL;
+  emailVerified = user.emailVerified;
+  uid = user.uid;  // The user's ID, unique to the Firebase project. Do NOT use
+                   // this value to authenticate with your backend server, if
+                   // you have one. Use User.getToken() instead.
+}
+
+*/
+
 // Constant HTML references
 const $money = $("#money");
 const $city = $("#city-location");
@@ -58,7 +76,7 @@ $("#submit-button").on("click", function () {
     let zip = $zip.val().trim();
 
     if (isSignedIn) {
-        db.ref(dir).push({money, city, zip});
+        db.ref(dir).push({ money, city, zip });
     }
 
     getRestaurants(money, city, zip);
@@ -146,10 +164,10 @@ function generateMap() {
         var loc = new Microsoft.Maps.Location(latitude, longitude);
         var pin = new Microsoft.Maps.Pushpin(loc);
         // textbox
-        console.log(restaurant)
+        // console.log(restaurant)
         var infobox = new Microsoft.Maps.Infobox(loc, {
             title: restaurant.name,
-            description: restaurant.location.address, 
+            description: restaurant.location.address,
         });
         infobox.setMap(map);
         // textbox
@@ -201,22 +219,43 @@ function generateList() {
     $("#column-group").removeClass("hide")
 }
 
-$("#signup").on("click", function () {
-    event.preventDefault();
+$("#logout").on("click", function () {
 
-    let em = $("#email").val().trim();
-    let pw = $("#password").val().trim();
+    // Do nothing if not logged in 
+    if (!isSignedIn) {
+        return;
+    }
 
-    firebase.auth().createUserWithEmailAndPassword(em, pw).catch(function (error) { console.log(error); });
-});
+    firebase.auth().signOut().then(function () {
+        window.location.reload(true);
+    }).catch(function (error) { console.log(error) });
+})
 
 $("#login").on("click", function () {
     event.preventDefault();
 
+    // console.log(isSignedIn);
+
+    if (isSignedIn) {
+        firebase.auth().signOut().then(function () {
+            window.location.reload(true);
+        }).catch(function (error) { console.log(error) });
+    }
+
     let em = $("#email").val().trim();
     let pw = $("#password").val().trim();
 
-    firebase.auth().signInWithEmailAndPassword(em, pw).catch(function (error) { console.log(error); });
+    firebase.auth().signInWithEmailAndPassword(em, pw).then(function () {
+        window.location.reload(true);
+    }).catch(function (error) {
+        if (error.code === "auth/user-not-found") {
+            firebase.auth().createUserWithEmailAndPassword(em, pw).then(function () {
+                window.location.reload(true);
+            }).catch(function (error) { console.log(error); });
+        }
+        // Different catch needed for wrong password to notify user
+    });
+
 });
 
 firebase.auth().onAuthStateChanged(function (user) {
@@ -224,6 +263,7 @@ firebase.auth().onAuthStateChanged(function (user) {
         console.log(user);
         isSignedIn = true;
         userEmail = user.email;
+        $("#navbarDropdownMenuLink").text(userEmail);
         dir += user.uid;
     }
 });
