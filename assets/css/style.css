@@ -1,5 +1,12 @@
+body {
+    font-family: 'Rock Salt', cursive;
+    background-image: url(pexels-photo-259165.jpeg);
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
 .jumbotron {
-    margin: 0% auto;
+    margin: 0 auto;
     max-width: 445px;
     margin-top: 10%;
     padding-top: 10px;
@@ -9,12 +16,7 @@
 a, a:hover, a:visited {
     color: #fff;
 }
-body {
-    font-family: 'Rock Salt', cursive;
-    background-image: url(pexels-photo-259165.jpeg);
-    background-repeat: no-repeat;
-    background-size: cover;
-}
+
 
 .display-4 {
     border-bottom: 4px solid black;
@@ -71,6 +73,15 @@ body {
      font-family: Merienda, cursive;
      
  }
+
+#navbarDropdownMenuLink {
+    color: black;
+    background-color: darkgrey;
+}
+
+#dropdown{
+    color: black
+}
 
 
 
