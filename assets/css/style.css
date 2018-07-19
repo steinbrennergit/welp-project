@@ -112,4 +112,6 @@ a, a:hover, a:visited {
     float: left;
     border: none;
     font-size: 12pt;
+    margin-top: 10px;
+    margin-left: 10px;
 }
