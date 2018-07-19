@@ -34,20 +34,23 @@ Process (what happens when a user Submits)
 firebase.initializeApp(fbConfig);
 const db = firebase.database();
 
-// Constant HTML references
+// Constant HTML references to the input fields
 const $money = $("#money");
 const $city = $("#city-location");
 const $zip = $("#zip-location");
 
 // Global vars
-var numOfRecentSearches = 0;
-var isSignedIn = false;
-var userEmail = "";
+var numOfRecentSearches = 0; // Used to prevent overflow of recent searches
+var isSignedIn = false; // Contain the auth state to determine database actions
+var userEmail = ""; // Contain user's email address to sign database entries
 var dir = "/"; // Contain user's unique directory within the database
-var map;
+var map; // Global reference to the active map object
 
 var userLocation = null; // IF GEOLOCATED: BING LOCATION OBJECT
-var restaurantList = [];
+
+var restaurantList = []; // Global array of all restaurant objects returned by Zomato
+var pinList = []; // Global array of all pin objects on map
+var infobox; // Global reference to the active infobox object
 
 /**** FOR GEOLOCATION ****/
 /*
@@ -170,13 +173,8 @@ function generateMap() {
         // Create a new Bing Maps pushpin at that location
         var pin = new Microsoft.Maps.Pushpin(loc);
 
-        // Create the text box associated with the push pin
-        var infobox = new Microsoft.Maps.Infobox(loc, {
-            visible: false, autoAlignment: true
-        });
-
-        // Associate the infobox with the map
-        infobox.setMap(map);
+        // Maintain an array of our pushpins for the ".result" listener
+        pinList.push(pin);
 
         // Dynamically set pin metadata to be retrieved later for infobox display
         pin.metadata = {
@@ -184,49 +182,6 @@ function generateMap() {
             description: restaurant.location.address,
             rating: restaurant.user_rating.aggregate_rating // not a property of metadata
         };
-
-        // On click/tap, show the info box
-        Microsoft.Maps.Events.addHandler(pin, 'click', function (args) {
-            // For ease of typing, name the important object path
-            let tar = args.target;
-
-            // Get the location of the pushpin to which this infobox is associated
-            let pinLoc = new Microsoft.Maps.Location(tar.geometry.y, tar.geometry.x);
-
-            // Attach the infobox to the pushpin's location and display relevant info
-            infobox.setOptions({
-                location: pinLoc,
-                title: tar.metadata.title,
-                description: tar.metadata.description,
-                rating: tar.metadata.rating, // need to attach rating to description
-                visible: true
-            });
-        });
-
-        // On mouse hover, show the info box
-        Microsoft.Maps.Events.addHandler(pin, 'mouseover', function (args) {
-            // For ease of typing, name the important object path
-            let tar = args.target;
-
-            // Get the location of the pushpin to which this infobox is associated
-            let pinLoc = new Microsoft.Maps.Location(tar.geometry.y, tar.geometry.x);
-
-            // Attach the infobox to the pushpin's location and display relevant info
-            infobox.setOptions({
-                location: pinLoc,
-                title: tar.metadata.title,
-                description: tar.metadata.description,
-                rating: tar.metadata.rating, // need to attach rating to description
-                visible: true
-            });
-        });
-
-        // When mouse leaves the pushpin, hide the info box
-        Microsoft.Maps.Events.addHandler(pin, 'mouseout', function () {
-            infobox.setOptions({
-                visible: false
-            });
-        });
 
         // Push each pin to the map
         map.entities.push(pin);
@@ -236,6 +191,12 @@ function generateMap() {
             centerLoc = new Microsoft.Maps.Location(latitude, longitude);
         }
     };
+
+    // Create a placeholder infobox
+    infobox = new Microsoft.Maps.Infobox(centerLoc);
+
+    // Call function to add pin handlers for click, mouseover and mouseout
+    addPinHandlers();
 
     // Set the map to center on the first restaurant, with appropriate zoom
     map.setView({
@@ -251,7 +212,7 @@ function generateMap() {
 // Using our array of restaurant objects, generate a list of restaurants to display
 function generateList() {
     if (restaurantList.length === 0) { // Check for an empty list of restaurants
-        console.log("empty list") // Somehow, notify user that there are no results
+        console.log("empty list"); // Somehow, notify user that there are no results
         return;
     }
 
@@ -259,32 +220,97 @@ function generateList() {
     for (let i = 0; i < restaurantList.length; i++) {
 
         //create a new anchor tag append the restaurant list
-        var newAnchor = $("<a>").attr("class", "flex-column align-items-start");
-        newAnchor.attr("href", "#")
+        var newAnchor = $("<a>").attr("class", "flex-column align-items-start result");
+        newAnchor.attr("href", "#");
+        newAnchor.attr("value", i);
 
         //Create new div to add the data into
-        var newDiv = $("<div>").attr("class", "d-flex w-100 justify-content-between")
+        var newDiv = $("<div>").attr("class", "d-flex w-100 justify-content-between");
 
         //Adds the restaurnaunt name in the drop down
-        var newName = $("<h5>").addClass("mb-1", "mb-name")
-        newName.text(restaurantList[i].name).css('text-align', 'left').css("padding-right", '20px')
+        var newName = $("<h5>").addClass("mb-1", "mb-name");
+        newName.text(restaurantList[i].name).css('text-align', 'left').css("padding-right", '20px');
 
         //Adds the address into the same dropdown box
-        var newAddress = $("<p>").addClass("mb-1", "mb-address")
-        newAddress.text(restaurantList[i].location.address).css('text-align', 'right').css("padding-left", '20px')
+        var newAddress = $("<p>").addClass("mb-1", "mb-address");
+        newAddress.text(restaurantList[i].location.address).css('text-align', 'right').css("padding-left", '20px');
 
         // Appends the name and address to the new div
         newDiv.append(newName, newAddress);
 
         // Appends the new div to the new anchor tag
-        newAnchor.append(newDiv).css("background-color", 'darkgrey').css("border", '1px solid black')
+        newAnchor.append(newDiv).css("background-color", 'darkgrey').css("border", '1px solid black');
 
         // Appends the anchor tag to the column group to display results
-        $("#column-group").append(newAnchor)
+        $("#column-group").append(newAnchor);
 
     }
-    $("#column-group").removeClass("hide")
+    $("#column-group").removeClass("hide");
     // Remove hide from new search button
+}
+
+// Called to add event handlers to all pins, to appropriately display info boxes
+function addPinHandlers() {
+    pinList.forEach(function (pin) {
+
+        // On mouse click, show the info box
+        Microsoft.Maps.Events.addHandler(pin, 'click', function () {
+            hideInfoBox();
+            showInfoBox(pin, true);
+        });
+
+        // On mouse hover, show the info box
+        Microsoft.Maps.Events.addHandler(pin, 'mouseover', function () {
+            hideInfoBox();
+            showInfoBox(pin, false);
+        });
+
+        // When mouse leaves the pushpin, hide the info box
+        Microsoft.Maps.Events.addHandler(pin, 'mouseout', function () {
+            hideInfoBox();
+        });
+    });
+}
+
+// Called to hide the previous info box before showing a new one
+function hideInfoBox() {
+    infobox.setOptions({ visible: false });
+    infobox.setMap(null);
+}
+
+// Called to show an info box at a particular pin; pass a boolean to determine if 
+//  the map should be centered (do not center on mouseover)
+function showInfoBox(pin, centerMap) {
+    // Get the pin location
+    let pinLoc = new Microsoft.Maps.Location(pin.geometry.y, pin.geometry.x);
+
+    // Center the map on the pin to focus on
+    if (centerMap) {
+        map.setView({
+            center: pinLoc,
+            zoom: 11.5
+        });
+    }
+
+    // Create the text box (infobox) associated with the push pin
+    infobox = new Microsoft.Maps.Infobox(pinLoc, {
+        location: pinLoc,
+        title: pin.metadata.title,
+        description: pin.metadata.description,
+        rating: pin.metadata.rating, // need to attach rating to description
+        visible: true
+    });
+
+    // Associate the infobox with the map
+    infobox.setMap(map);
+
+    // If infobox is clicked, center the map as if they clicked the pin
+    Microsoft.Maps.Events.addHandler(infobox, 'click', function () {
+        map.setView({
+            center: pinLoc,
+            zoom: 11.5
+        });
+    });
 }
 
 // Called when the user submits their search query
@@ -420,6 +446,20 @@ firebase.auth().onAuthStateChanged(function (user) {
         $("#login-modal-button").removeClass("hide");
         $("#logout").addClass("hide");
     }
+});
+
+// Called when a user clicks on a search result 
+$(document).on("click", ".result", function () {
+    event.preventDefault(); // Prevent any default behavior
+
+    // Hide old info box
+    hideInfoBox();
+
+    // Get the index of the pin we are trying to display an info box for
+    let i = $(this).attr("value");
+
+    // Show the info box
+    showInfoBox(pinList[i], true);
 });
 
 // Called when a user clicks on a recent search to replicate
