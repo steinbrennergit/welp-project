@@ -26,14 +26,6 @@ Process (what happens when a user Submits)
     - Store search parameters under that username for them to return to later
 */
 
-/*
-TODO:
-    - STYLING
-    - INPUT VALIDATION (FIX)
-    - USER PUSHPIN GRAPHIC (STYLE 37, STYLE 113, STYLE 118)
-    - POWERPOINT
-*/
-
 /***********PRODUCTION CODE***************/
 // Database init and reference
 firebase.initializeApp(fbConfig);
@@ -64,7 +56,7 @@ var userPin = null; // IF GEOLOCATED: BING MAPS PUSHPIN OBJECT
 function searchHandler(coords, money, city, zip, toPush) {
     // Build the Zomato API query URL with coordinates; radius needs work?
     var queryURL = "https://developers.zomato.com/api/v2.1/search?lat=" + coords[0] + "&lon=" + coords[1] + "&sort=cost&order=asc&apikey=" + zomatoAPI;
-    console.log(queryURL);
+    // console.log(queryURL);
     // Create a user location object using our coordinates
     userLocation = new Microsoft.Maps.Location(coords[0], coords[1]);
 
@@ -83,7 +75,7 @@ function searchHandler(coords, money, city, zip, toPush) {
         // If the user is signed in and we received true in toPush, push to database
         //  -- toPush is true if user provided a new search, false if they selected a past search
         if (isSignedIn && toPush) {
-            db.ref(dir).push({ date: moment().format('MM/DD/YYYY, h:mm a'), money, city, zip, userEmail });
+            db.ref(dir).push({ date: moment().format('MM/DD/YY, h:mm a'), money, city, zip, userEmail });
         }
 
         // Create a placeholder array for restaurants filtered by cost
@@ -190,7 +182,8 @@ function generateMap() {
 // Using our array of restaurant objects, generate a list of restaurants to display
 function generateList() {
     if (restaurantList.length === 0) { // Check for an empty list of restaurants
-        console.log("empty list"); // Somehow, notify user that there are no results
+        $invalidMsg.text("The search you requested did not return any results. Please try again.")
+        $invalidInput.modal("show");
         return;
     }
 
@@ -520,11 +513,7 @@ function validPassword(str) {
 
 // Input validation: fields
 function validInput(city, zip, money) {
-    // console.log("checking inputs")
 
-    // console.log("zip length: " + zip.length);
-    // console.log("city: " + city);
-    // console.log(money);
     if (zip.length !== 5) {
         $invalidMsg.text("Please enter a 5-digit zip code.");
         $invalidInput.modal("show");
@@ -670,7 +659,8 @@ function searchHandlerCityOnly(money, city, zip, toPush) {
 
         // If the city is not found, notify the user that their search failed
         if (id === undefined) {
-            console.log("City not found; return (notify user)");
+            $invalidMsg.text("The city you provided did not return any results. Please try again.")
+            $invalidInput.modal("show");
             return;
         }
 
