@@ -51,111 +51,77 @@ var pinList = []; // Global array of all pin objects on map
 var infobox; // Global reference to the active infobox object
 
 var userLocation = null; // IF GEOLOCATED: BING MAPS LOCATION OBJECT
+var userPin = null; // IF GEOLOCATED: BING MAPS PUSHPIN OBJECT
 
-/**** FOR GEOLOCATION ****/
-/*
-function getLocation() {
-    navigator.geolocation.getCurrentPosition(function (pos) {
-        console.log("enter navigator")
+// Search handler with coordinates; if user enables geolocation or provides valid zip code
+function searchHandler(coords, money, city, zip, toPush) {
+    // Build the Zomato API query URL with coordinates; radius needs work?
+    var queryURL = "https://developers.zomato.com/api/v2.1/search?lat=" + coords[0] + "&lon=" + coords[1] + "&radius=1164&sort=cost&order=asc&apikey=" + zomatoAPI;
 
-        userLocation = new Microsoft.Maps.Location(pos.coords.latitude, pos.coords.longitude);
-        console.log("navigator line 1");
+    // Create a user location object using our coordinates
+    userLocation = new Microsoft.Maps.Location(coords[0], coords[1]);
 
-        let userPin = new Microsoft.Maps.Pushpin(userLocation);
-        console.log("navigator line 2");
+    // Create a user pushpin using our user location object
+    userPin = new Microsoft.Maps.Pushpin(userLocation);
 
-        map.entities.push(userPin);
-        console.log("navigator line 3");
-
-        map.setView({ center: userLocation, zoom: 11.5 });
-        console.log("navigator done");
-
-    });
-}
-*/
-/**** END GEOLOCATION ****/
-
-// Using user input, get restaurant information from the Zomato API, store in array
-function getRestaurants(money, city, zip, toPush) {
-    // let maxDist = 20; // NOT CURRENTLY IN USE
-
-    // First query URL to query Zomato for the city provided by user input
-    var firstQueryURL = "https://developers.zomato.com/api/v2.1/cities?q=" + city + "&apikey=284d8bf6da6b7fc3efc07100c1246454"
-
-    // AJAX call to Zomato for city information
+    // Call Zomato API for restaurant information around the provided coordinates
     $.ajax({
-        url: firstQueryURL,
+        url: queryURL,
         method: 'GET'
     }).then(function (res) {
-        // res should contain an object, representing the city, with a unique identifier
+        // Res should contain an object containing up to 20 restaurant objects, sorted by cost
+        // If we want more than 20, we would call again with an offset - this would be difficult and highly inefficient
+        // To broaden our search would require paying for the API key
 
-        var id = res.location_suggestions["0"].id; // assign the city identifier to variable id
-
-        // If the city is not found, notify the user that their search failed
-        if (id === undefined) {
-            console.log("City not found; return (notify user)");
-            return;
-        }
-
-        // If the user is signed in and this function was called with TRUE in toPush, 
-        //  push this search to the database to be retrieved later.
+        // If the user is signed in and we received true in toPush, push to database
+        //  -- toPush is true if user provided a new search, false if they selected a past search
         if (isSignedIn && toPush) {
             db.ref(dir).push({ date: moment().format('MM/DD/YYYY, h:mm a'), money, city, zip, userEmail });
         }
 
-        // Build the nested query URL to search for restaurants within the city
-        var secondQueryURL = "https://developers.zomato.com/api/v2.1/search?apikey=284d8bf6da6b7fc3efc07100c1246454&entity_type=city&sort=cost&order=asc&entity_id=" + id // Add parameters to this URL
+        // Create a placeholder array for restaurants filtered by cost
+        let filteredRestaurants = []
 
-        // AJAX call to Zomato for restaurant information within city
-        $.ajax({
-            url: secondQueryURL,
-            method: 'GET'
-        }).then(function (res) {
-            // Res should contain an object containing up to 20 restaurant objects, sorted by cost
-            // If we want more than 20, we would call again with an offset - this would be difficult and highly inefficient
-            // To broaden our search would require paying for the API key
-
-            // Create a placeholder array for restaurants filtered by cost
-            let filteredRestaurants = []
-
-            // Iterating through restaurant objects (LOOP), push all restaurant objects where the (average cost for two / 2) < money
-            for (let i = 0; i < 20; i++) {
-                // Restaurants are not contained in an array, but are indexed - if we run out of them before 20, break out of loop
-                if (res.restaurants[i] === undefined) {
-                    break;
-                }
-
-                // For ease of typing, name the important object path
-                let restaurant = res.restaurants[i].restaurant;
-
-                // Calculate cost for one, make the comparison described above
-                let costForOne = restaurant.average_cost_for_two / 2;
-                if (costForOne <= money && costForOne !== 0) {
-                    filteredRestaurants.push(restaurant); // Push to array if cost is acceptable
-                }
+        // Iterating through restaurant objects (LOOP), push all restaurant objects where the (average cost for two / 2) < money
+        for (let i = 0; i < 20; i++) {
+            // Restaurants are not contained in an array, but are indexed - if we run out of them before 20, break out of loop
+            if (res.restaurants[i] === undefined) {
+                break;
             }
 
-            // Assign the result to the global variable restaurantList
-            restaurantList = filteredRestaurants;
+            // console.log(res.restaurants[i]);
 
-            // Call the fns to display this information
-            generateMap();
-            generateList();
+            // For ease of typing, name the important object path
+            let restaurant = res.restaurants[i].restaurant;
 
-            // Hide the search window
-            $("#first-window").addClass("hide");
-        });
+            // Calculate cost for one, make the comparison described above
+            let costForOne = restaurant.average_cost_for_two / 2;
+            if (costForOne <= money && costForOne !== 0) {
+                filteredRestaurants.push(restaurant); // Push to array if cost is acceptable
+            }
+        }
+
+        // Assign the result to the global variable restaurantList
+        restaurantList = filteredRestaurants;
+
+        // Call the fns to display this information
+        generateMap();
+        generateList();
+
+        // Hide the search window
+        $("#first-window").addClass("hide");
+
+        // Error catching
+    }).catch(function (err) {
+        console.log(err); // Log the error
+
+        // If searching by coords broke, try searching by city
+        searchHandlerCityOnly(money, city, zip, toPush);
     });
 }
 
 // Using our array of restaurant objects, build the map with the Bing Maps API
 function generateMap() {
-
-    // Create a new Bing Maps map and assign it to global variable
-    map = new Microsoft.Maps.Map("#map-div", { showLocateMeButton: false });
-
-    // Declare variable centerLoc outside the scope of the for loop (may not be necessary)
-    var centerLoc;
 
     // For each restaurant object (LOOP)
     for (let i = 0; i < restaurantList.length; i++) {
@@ -185,11 +151,6 @@ function generateMap() {
 
         // Push each pin to the map
         map.entities.push(pin);
-
-        // Set the center location to that of the first restaurant
-        if (i === 0) {
-            centerLoc = new Microsoft.Maps.Location(latitude, longitude);
-        }
     };
 
     // Create a placeholder infobox
@@ -198,12 +159,22 @@ function generateMap() {
     // Call function to add pin handlers for click, mouseover and mouseout
     addPinHandlers();
 
-    // Set the map to center on the first restaurant, with appropriate zoom
-    map.setView({
-        mapTypeId: Microsoft.Maps.MapTypeId.road,
-        center: centerLoc,
-        zoom: 11.5
-    });
+    // Set the map to center on the first restaurant, with appropriate zoom, if a user location was not set
+    if (userLocation === null) {
+        var centerLoc = new Microsoft.Maps.Location(latitude, longitude);
+        map.setView({
+            mapTypeId: Microsoft.Maps.MapTypeId.road,
+            center: centerLoc,
+            zoom: 11.5
+        });
+    } else { // If user location was set, the map should center on the user, and the user should have a pin
+        map.entities.push(userPin);
+
+        map.setView({
+            center: userLocation,
+            zoom: 11.5
+        });
+    }
 
     // Show the map
     $("#map-div").removeClass("hide");
@@ -317,8 +288,12 @@ function showInfoBox(pin, centerMap) {
 $("#submit-button").on("click", function () {
     event.preventDefault() // Prevents page from reloading on submit
 
+    $("#new-search").removeClass("hide");
+
     // Get input from input fields
-    let money = parseInt($money.val().trim());
+    let money = parseFloat($money.val().trim());
+
+    console.log(money, typeof money)
 
     // Make the city input presentable regardless of user's choice of capitalization
     let tempCity = $city.val().trim();
@@ -326,14 +301,53 @@ $("#submit-button").on("click", function () {
     // Does not capitalize every word, if the city has multiple words; consider improving
 
     let zip = $zip.val().trim();
+    // console.log("Zip:", zip);
 
-    /**** FOR GEOLOCATION ****/
-    // map = new Microsoft.Maps.Map("#map-div", { showLocateMeButton: false });
-    // var located = getLocation();
-    /**** END GEOLOCATION ****/
+    // Initialize map so the geolocation promise can act on it
+    map = new Microsoft.Maps.Map("#map-div", { showLocateMeButton: false, showMapTypeSelector: false });
 
-    // Pass inputs to getRestaurants() where the Zomato API is queried for information
-    getRestaurants(money, city, zip, true);
+    // Promise to get location if possible
+    var getLocation = function () {
+        return new Promise(function (resolve, reject) {
+            navigator.geolocation.getCurrentPosition(resolve, reject);
+        });
+    }
+
+    // If we can get the user's position via geolocation, then
+    getLocation().then((pos) => {
+        // Get coords from geolocation response
+        let lat = Math.round((pos.coords.latitude + 0.00000001) * 100000) / 100000;
+        let lon = Math.round((pos.coords.longitude + 0.00000001) * 100000) / 100000;
+
+        var coords = [lat, lon];
+        // console.log("Geolocated");
+        // console.log(coords);
+
+        // Get restaurants via geolocation
+        searchHandler(coords, money, city, zip, true);
+
+        // Error catch; pass inputs to searchHandler() where the Zomato API is queried for information
+    }).catch((err) => {
+        // Get coords of zip code from Bing Maps API
+        var queryURL = "http://dev.virtualearth.net/REST/v1/Locations?countryRegion=United%20States&postalCode=" + zip + "&key=" + bingAPI;
+        // console.log("Query URL:", queryURL);
+
+        $.ajax({ url: queryURL, method: 'GET' }).then(function (res) {
+            var coordsRef = res.resourceSets["0"].resources["0"].geocodePoints["0"].coordinates;
+            let lat = Math.round((coordsRef[0] + 0.00000001) * 100000) / 100000;
+            let lon = Math.round((coordsRef[1] + 0.00000001) * 100000) / 100000;
+            var coords = [lat, lon];
+            // console.log("Located by zip code");
+            // console.log(coords);
+
+            searchHandler(coords, money, city, zip, true);
+        }).catch(function (err) {
+            console.log("Failed to locate; passing to searchHandlerCityOnly");
+            console.log(err);
+
+            searchHandlerCityOnly(money, city, zip, true);
+        });
+    });
 });
 
 // Called when the user attempts to log in
@@ -441,7 +455,8 @@ firebase.auth().onAuthStateChanged(function (user) {
             // Prepend the new row to the search list
             $("#past-searches").prepend(newRow);
         });
-    } else {
+    } else { // If user is NOT signed in,
+        // Change the display under "Recent Searches" to direct users to sign in or sign up
         let msg = $("<h4>").text("Sign in to see your search history!").addClass("text-center vertical-pad")
         $("#table-div").append(msg);
         $("#exampleModalCenterTitle").addClass("hide");
@@ -463,22 +478,24 @@ firebase.auth().onAuthStateChanged(function (user) {
 function formatMoney(m) {
     let output = false;
 
+    m = m.toString();
+
     // Format money string
     if (m.indexOf(".") === -1) { // If there is no decimal point
         // Add dollar sign in front, .00 behind
-        output = "$" + m + ".00";
+        output = m + ".00";
     } else if (m.indexOf(".") === m.length - 1) { // If the number ends in a decimal point
         // Add dollar sign in front, 00 behind
-        output = "$" + m + "00";
+        output = m + "00";
     } else if (m.indexOf(".") === m.length - 2) { // If the number only has one digit after decimal
         // Add dollar sign in front, 0 behind
-        output = "$" + m + "0";
+        output = m + "0";
     } else { // If there were two or more digits after a decimal
         // Add dollar sign in front, cut off extra characters
-        output = "$" + m.substr(0, m.indexOf(".") + 3);
+        output = m.substr(0, m.indexOf(".") + 3);
     }
 
-    return output;
+    return "$" + output;
 }
 
 // Format city string
@@ -559,6 +576,84 @@ $(document).on("click", ".past-search", function () {
     // Hide the modal
     $("#exampleModalCenter").modal("hide");
 
-    // Call getRestaurants() with the search data; pass "false" so this is not pushed to database again
-    getRestaurants(m, c, z, false);
+    // Call searchHandler() with the search data; pass "false" so this is not pushed to database again
+    searchHandler(m, c, z, false);
 });
+
+// DEPRECATED: Will only be called if somehow there is an error with both geolocation and
+//   the Bing Maps API call to find location via zip code, or Zomato doesn't accept query by coords.
+// Using user input, get restaurant information from the Zomato API, store in array
+function searchHandlerCityOnly(money, city, zip, toPush) {
+    console.log("searchHandlerCityOnly has been called, beware");
+    // let maxDist = 20; // NOT CURRENTLY IN USE
+
+    // coords is an array of length 2; latitude and longitude
+
+    // First query URL to query Zomato for the city provided by user input
+    var firstQueryURL = "https://developers.zomato.com/api/v2.1/cities?q=" + city + "&apikey=284d8bf6da6b7fc3efc07100c1246454";
+
+    // AJAX call to Zomato for city information
+    $.ajax({
+        url: firstQueryURL,
+        method: 'GET'
+    }).then(function (res) {
+        // res should contain an object, representing the city, with a unique identifier
+
+        var id = res.location_suggestions["0"].id; // assign the city identifier to variable id
+
+        // If the city is not found, notify the user that their search failed
+        if (id === undefined) {
+            console.log("City not found; return (notify user)");
+            return;
+        }
+
+        // If the user is signed in and this function was called with TRUE in toPush, 
+        //  push this search to the database to be retrieved later.
+        if (isSignedIn && toPush) {
+            db.ref(dir).push({ date: moment().format('MM/DD/YYYY, h:mm a'), money, city, zip, userEmail });
+        }
+
+        // Build the nested query URL to search for restaurants within the city
+        var secondQueryURL = "https://developers.zomato.com/api/v2.1/search?apikey=284d8bf6da6b7fc3efc07100c1246454&entity_type=city&sort=cost&order=asc&entity_id=" + id // Add parameters to this URL
+
+        // AJAX call to Zomato for restaurant information within city
+        $.ajax({
+            url: secondQueryURL,
+            method: 'GET'
+        }).then(function (res) {
+            // Res should contain an object containing up to 20 restaurant objects, sorted by cost
+            // If we want more than 20, we would call again with an offset - this would be difficult and highly inefficient
+            // To broaden our search would require paying for the API key
+
+            // Create a placeholder array for restaurants filtered by cost
+            let filteredRestaurants = []
+
+            // Iterating through restaurant objects (LOOP), push all restaurant objects where the (average cost for two / 2) < money
+            for (let i = 0; i < 20; i++) {
+                // Restaurants are not contained in an array, but are indexed - if we run out of them before 20, break out of loop
+                if (res.restaurants[i] === undefined) {
+                    break;
+                }
+
+                // For ease of typing, name the important object path
+                let restaurant = res.restaurants[i].restaurant;
+
+                // Calculate cost for one, make the comparison described above
+                let costForOne = restaurant.average_cost_for_two / 2;
+                if (costForOne <= money && costForOne !== 0) {
+                    filteredRestaurants.push(restaurant); // Push to array if cost is acceptable
+                }
+            }
+
+            // Assign the result to the global variable restaurantList
+            restaurantList = filteredRestaurants;
+
+            // Call the fns to display this information
+            generateMap();
+            generateList();
+
+            // Hide the search window
+            $("#first-window").addClass("hide");
+        });
+    });
+}

@@ -30,7 +30,7 @@
                 aria-expanded="false" style="float: right">
                 Guest User
             </a>
-            <button type="button" class="new-search" id="new-search">New Search</button>
+            <button type="button" class="new-search hide" id="new-search">New Search</button>
             <div class="dropdown-menu" id="dropdown" aria-labelledby="navbarDropdownMenuLink">
                 <a class="dropdown-item" href="#" id="login-modal-button" data-toggle="modal" data-target="#exampleModal">Login</a>
                 <a class="dropdown-item hide" href="#" id="logout">Log Out</a>
@@ -54,7 +54,7 @@
                                 <div class="input-group-prepend">
                                     <span class="input-group-text">$</span>
                                 </div>
-                                <input type="text" class="form-control" id="money" placeholder="10.00">
+                                <input type="number" step="0.01" min="5" class="form-control" id="money" placeholder="Minimum 5.00" required>
                             </div>
                             <small id="text-box" class="form-text text-muted">It's ok if you're poor, so are we...</small>
                         </div>
@@ -62,8 +62,8 @@
 
                             <label for="whereAreYou" id="pad-less">Where are you?</label>
                             <div class="form-group row pad-sides">
-                                <input type="location" class="form-control col-8" id="city-location" placeholder="City">
-                                <input type="location" class="form-control col-4" id="zip-location" placeholder="Zip">
+                                <input type="location" class="form-control col-8" id="city-location" placeholder="City" required>
+                                <input type="location" class="form-control col-4" id="zip-location" placeholder="Zip" required>
                             </div>
                         </div>
                         <br>
