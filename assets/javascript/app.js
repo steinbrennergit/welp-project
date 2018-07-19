@@ -29,6 +29,14 @@ Process (what happens when a user Submits)
     - Store search parameters under that username for them to return to later
 */
 
+/*
+TODO:
+    - STYLING
+    - INPUT VALIDATION (FIX)
+    - USER PUSHPIN GRAPHIC (STYLE 37, STYLE 113, STYLE 118)
+    - POWERPOINT
+*/
+
 /***********PRODUCTION CODE***************/
 // Database init and reference
 firebase.initializeApp(fbConfig);
@@ -38,6 +46,8 @@ const db = firebase.database();
 const $money = $("#money");
 const $city = $("#city-location");
 const $zip = $("#zip-location");
+const $invalidInput = $("#input-invalid-modal");
+const $invalidMsg = $("#invalid-input-msg");
 
 // Global vars
 // var numOfRecentSearches = 0; // Used to prevent overflow of recent searches
@@ -56,13 +66,13 @@ var userPin = null; // IF GEOLOCATED: BING MAPS PUSHPIN OBJECT
 // Search handler with coordinates; if user enables geolocation or provides valid zip code
 function searchHandler(coords, money, city, zip, toPush) {
     // Build the Zomato API query URL with coordinates; radius needs work?
-    var queryURL = "https://developers.zomato.com/api/v2.1/search?lat=" + coords[0] + "&lon=" + coords[1] + "&radius=1164&sort=cost&order=asc&apikey=" + zomatoAPI;
-
+    var queryURL = "https://developers.zomato.com/api/v2.1/search?lat=" + coords[0] + "&lon=" + coords[1] + "&sort=cost&order=asc&apikey=" + zomatoAPI;
+    console.log(queryURL);
     // Create a user location object using our coordinates
     userLocation = new Microsoft.Maps.Location(coords[0], coords[1]);
 
     // Create a user pushpin using our user location object
-    userPin = new Microsoft.Maps.Pushpin(userLocation);
+    userPin = new Microsoft.Maps.Pushpin(userLocation, { icon: 'https://msdn.microsoft.com/dynimg/IC856255.jpeg/' });
 
     // Call Zomato API for restaurant information around the provided coordinates
     $.ajax({
@@ -293,7 +303,7 @@ $("#submit-button").on("click", function () {
     // Get input from input fields
     let money = parseFloat($money.val().trim());
 
-    console.log(money, typeof money)
+    // console.log(money, typeof money)
 
     // Make the city input presentable regardless of user's choice of capitalization
     let tempCity = $city.val().trim();
@@ -303,12 +313,17 @@ $("#submit-button").on("click", function () {
     let zip = $zip.val().trim();
     // console.log("Zip:", zip);
 
+    if (!validInput(city, zip, money)) {
+        return;
+    }
+
     // Initialize map so the geolocation promise can act on it
     map = new Microsoft.Maps.Map("#map-div", { showLocateMeButton: false, showMapTypeSelector: false });
 
     // Promise to get location if possible
     var getLocation = function () {
         return new Promise(function (resolve, reject) {
+            navigator.geolocation.getCurrentPosition(resolve, reject);
             navigator.geolocation.getCurrentPosition(resolve, reject);
         });
     }
@@ -367,6 +382,12 @@ $("#login").on("click", function () {
     // Get email and password from input fields
     let em = $("#email").val().trim();
     let pw = $("#password").val().trim();
+
+    if (!validEmail(em)) {
+        return;
+    } else if (!validPassword(pw)) {
+        return;
+    }
 
     // Attempt to sign the user in
     firebase.auth().signInWithEmailAndPassword(em, pw).then(function () {
@@ -473,6 +494,55 @@ firebase.auth().onAuthStateChanged(function (user) {
         $("#table-div").append(msg2);
     }
 });
+
+// Input validation: email
+function validEmail(str) {
+
+    if (str.indexOf("@") === -1) {
+        $invalidMsg.text("Please enter a valid email address. A valid email must contain the '@' symbol.");
+        $invalidInput.modal("show");
+        return false;
+    } else if (str.indexOf(".") === -1 || str.indexOf(".com") === -1 && str.indexOf(".net") === -1 && str.indexOf(".edu") === -1) {
+        $invalidMsg.text("Please enter a valid email address ending in '.com', '.net' or '.edu' and try again.");
+        $invalidInput.modal("show");
+        return false;
+    }
+
+    return true;
+}
+
+// Input validation: password
+function validPassword(str) {
+    if (str.length < 6) {
+        $invalidMsg.text("Passwords must be at least 6 characters long. Please enter a new password.");
+        $invalidInput.modal("show");
+        return false;
+    }
+    return true;
+}
+
+// Input validation: fields
+function validInput(city, zip, money) {
+    // console.log("checking inputs")
+
+    // console.log("zip length: " + zip.length);
+    // console.log("city: " + city);
+    // console.log(money);
+    if (zip.length !== 5) {
+        $invalidMsg.text("Please enter a 5-digit zip code.");
+        $invalidInput.modal("show");
+        return false;
+    } else if (city === "") {
+        $invalidMsg.text("Please fill in all input fields (city, zip, budget).");
+        $invalidInput.modal("show");
+        return false;
+    } else if (money < 5) {
+        $invalidMsg.text("Please fill in all input fields (budget has a minimum of 5.00).");
+        $invalidInput.modal("show");
+        return false;
+    }
+    return true;
+}
 
 // Format money string
 function formatMoney(m) {
