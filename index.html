@@ -11,7 +11,8 @@
         crossorigin="anonymous">
 
     <!-- Link Fonts-->
-    <link href="https://fonts.googleapis.com/css?family=Merienda|Rock+Salt" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Merienda" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Balthazar|Varela" rel="stylesheet">
 
     <!-- Linking my CSS -->
     <link rel="stylesheet" href="assets/css/style.css">
@@ -25,19 +26,22 @@
 
 <body>
     <div>
-        <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true"
-                aria-expanded="false" style="float: right">
-                Guest User
-            </a>
-            <button type="button" class="new-search hide" id="new-search">New Search</button>
-            <div class="dropdown-menu" id="dropdown" aria-labelledby="navbarDropdownMenuLink">
-                <a class="dropdown-item" href="#" id="login-modal-button" data-toggle="modal" data-target="#exampleModal">Login</a>
-                <a class="dropdown-item hide" href="#" id="logout">Log Out</a>
+        <div class="row width">
+            <div class="col-12" >
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true"
+                        aria-expanded="false" style="float: right">
+                        Guest User
+                    </a>
+                    <button type="button" class="new-search hide" id="new-search">New Search</button>
+                    <div class="dropdown-menu" id="dropdown" aria-labelledby="navbarDropdownMenuLink">
+                        <a class="dropdown-item" href="#" id="login-modal-button" data-toggle="modal" data-target="#exampleModal">Login</a>
+                        <a class="dropdown-item hide" href="#" id="logout">Log Out</a>
+                    </div>
+                </li>
             </div>
-        </li>
+        </div>
     </div>
-    <br>
 
     <div class="container" id="first-window">
         <div class="row">
@@ -56,7 +60,7 @@
                                 </div>
                                 <input type="number" step="0.01" min="5" class="form-control" id="money" placeholder="Minimum 5.00" required>
                             </div>
-                            <small id="text-box" class="form-text text-muted">It's ok if you're poor, so are we...</small>
+                            <small id="text-box">It's ok if you're poor, so are we...</small>
                         </div>
                         <div class="row">
 
@@ -84,12 +88,13 @@
             </div>
         </div>
     </div>
-    <div class="row">
+
+    <div class="row width">
         <div class="col-md-6 col-sm-12">
             <div class="list-group hide" id="column-group">
             </div>
         </div>
-        <div class="col-md-5 col-sm-12 hide" id="map-div" style="position:relative;width:600px;height:400px;">
+        <div class="col-md-6 col-sm-12 hide" id="map-div" style="position:relative;width:600px;height:400px;">
             <img class="bing-map" src="http://via.placeholder.com/1x500" alt="">
         </div>
     </div>
@@ -124,8 +129,7 @@
         </div>
     </div>
 
-    <div class="modal fade scroller" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
-        aria-hidden="true">
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header" id="searches-modal-header">
@@ -146,6 +150,22 @@
                         </thead>
                         <tbody id="past-searches"></tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="input-invalid-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header" id="searches-modal-header">
+                    <h5 class="modal-title text-center col-11" id="inputInvalidText">Whoops!</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="container">
+                    <h4 id="invalid-input-msg">Please fill out all the input fields! (budget, city, zip)</h4>
                 </div>
             </div>
         </div>
