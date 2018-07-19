@@ -56,7 +56,7 @@ var userPin = null; // IF GEOLOCATED: BING MAPS PUSHPIN OBJECT
 // Search handler with coordinates; if user enables geolocation or provides valid zip code
 function searchHandler(coords, money, city, zip, toPush) {
     // Build the Zomato API query URL with coordinates; radius needs work?
-    var queryURL = "https://developers.zomato.com/api/v2.1/search?lat=" + coords[0] + "&lon=" + coords[1] + "&radius=2500&sort=cost&order=asc&apikey=" + zomatoAPI;
+    var queryURL = "https://developers.zomato.com/api/v2.1/search?lat=" + coords[0] + "&lon=" + coords[1] + "&radius=1164&sort=cost&order=asc&apikey=" + zomatoAPI;
 
     // Create a user location object using our coordinates
     userLocation = new Microsoft.Maps.Location(coords[0], coords[1]);
@@ -302,7 +302,7 @@ $("#submit-button").on("click", function () {
     // console.log("Zip:", zip);
 
     // Initialize map so the geolocation promise can act on it
-    map = new Microsoft.Maps.Map("#map-div", { showLocateMeButton: false });
+    map = new Microsoft.Maps.Map("#map-div", { showLocateMeButton: false, showMapTypeSelector: false });
 
     // Promise to get location if possible
     var getLocation = function () {
