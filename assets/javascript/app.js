@@ -53,37 +53,18 @@ var infobox; // Global reference to the active infobox object
 var userLocation = null; // IF GEOLOCATED: BING MAPS LOCATION OBJECT
 var userPin = null; // IF GEOLOCATED: BING MAPS PUSHPIN OBJECT
 
-/**** FOR GEOLOCATION ****/
-/*
-function getLocation() {
-    navigator.geolocation.getCurrentPosition(function (pos) {
-        console.log("enter navigator")
-
-        userLocation = new Microsoft.Maps.Location(pos.coords.latitude, pos.coords.longitude);
-        console.log("navigator line 1");
-
-        let userPin = new Microsoft.Maps.Pushpin(userLocation);
-        console.log("navigator line 2");
-
-        map.entities.push(userPin);
-        console.log("navigator line 3");
-
-        map.setView({ center: userLocation, zoom: 11.5 });
-        console.log("navigator done");
-
-    });
-}
-*/
-/**** END GEOLOCATION ****/
-
 // Search handler with coordinates; if user enables geolocation or provides valid zip code
 function searchHandler(coords, money, city, zip, toPush) {
+    // Build the Zomato API query URL with coordinates; radius needs work?
     var queryURL = "https://developers.zomato.com/api/v2.1/search?lat=" + coords[0] + "&lon=" + coords[1] + "&radius=2500&sort=cost&order=asc&apikey=" + zomatoAPI;
 
+    // Create a user location object using our coordinates
     userLocation = new Microsoft.Maps.Location(coords[0], coords[1]);
 
+    // Create a user pushpin using our user location object
     userPin = new Microsoft.Maps.Pushpin(userLocation);
 
+    // Call Zomato API for restaurant information around the provided coordinates
     $.ajax({
         url: queryURL,
         method: 'GET'
@@ -92,6 +73,8 @@ function searchHandler(coords, money, city, zip, toPush) {
         // If we want more than 20, we would call again with an offset - this would be difficult and highly inefficient
         // To broaden our search would require paying for the API key
 
+        // If the user is signed in and we received true in toPush, push to database
+        //  -- toPush is true if user provided a new search, false if they selected a past search
         if (isSignedIn && toPush) {
             db.ref(dir).push({ date: moment().format('MM/DD/YYYY, h:mm a'), money, city, zip, userEmail });
         }
@@ -106,7 +89,7 @@ function searchHandler(coords, money, city, zip, toPush) {
                 break;
             }
 
-            console.log(res.restaurants[i]);
+            // console.log(res.restaurants[i]);
 
             // For ease of typing, name the important object path
             let restaurant = res.restaurants[i].restaurant;
@@ -127,9 +110,12 @@ function searchHandler(coords, money, city, zip, toPush) {
 
         // Hide the search window
         $("#first-window").addClass("hide");
-    }).catch(function (err) {
-        console.log(err);
 
+        // Error catching
+    }).catch(function (err) {
+        console.log(err); // Log the error
+
+        // If searching by coords broke, try searching by city
         searchHandlerCityOnly(money, city, zip, toPush);
     });
 }
@@ -487,24 +473,24 @@ firebase.auth().onAuthStateChanged(function (user) {
 });
 
 // Format money string
-function formatNum(n) {
+function formatMoney(m) {
     let output = false;
 
-    n = n.toString();
+    m = m.toString();
 
     // Format money string
-    if (n.indexOf(".") === -1) { // If there is no decimal point
+    if (m.indexOf(".") === -1) { // If there is no decimal point
         // Add dollar sign in front, .00 behind
-        output = n + ".00";
-    } else if (n.indexOf(".") === n.length - 1) { // If the number ends in a decimal point
+        output = m + ".00";
+    } else if (m.indexOf(".") === m.length - 1) { // If the number ends in a decimal point
         // Add dollar sign in front, 00 behind
-        output = n + "00";
-    } else if (n.indexOf(".") === n.length - 2) { // If the number only has one digit after decimal
+        output = m + "00";
+    } else if (m.indexOf(".") === m.length - 2) { // If the number only has one digit after decimal
         // Add dollar sign in front, 0 behind
-        output = n + "0";
+        output = m + "0";
     } else { // If there were two or more digits after a decimal
         // Add dollar sign in front, cut off extra characters
-        output = n.substr(0, n.indexOf(".") + 3);
+        output = m.substr(0, m.indexOf(".") + 3);
     }
 
     return "$" + output;
@@ -593,7 +579,7 @@ $(document).on("click", ".past-search", function () {
 });
 
 // DEPRECATED: Will only be called if somehow there is an error with both geolocation and
-//  the Bing Maps API call to find location via zip code.
+//   the Bing Maps API call to find location via zip code, or Zomato doesn't accept query by coords.
 // Using user input, get restaurant information from the Zomato API, store in array
 function searchHandlerCityOnly(money, city, zip, toPush) {
     console.log("searchHandlerCityOnly has been called, beware");
