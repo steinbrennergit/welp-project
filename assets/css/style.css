@@ -120,7 +120,6 @@ a, a:hover, a:visited {
     background-color: darkgrey;
     margin: 0 auto;
     opacity: 0.80;
-    display: block;
     padding: .5rem 1rem;
     float: left;
     border: none;
