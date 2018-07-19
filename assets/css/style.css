@@ -26,8 +26,16 @@ a, a:hover, a:visited {
     padding-bottom: 25px;
 }
 
+.vertical-pad {
+    padding: 10px 0;
+}
+
 .modal-footer {
     background-color: midnightblue;
+}
+
+.modal-header {
+    padding-left: 10%;
 }
 
 @media (max-width: 480px) {
@@ -43,6 +51,10 @@ a, a:hover, a:visited {
         font-size: 29%;
     }
     
+}
+
+.horiz-center {
+    margin: 0 auto;
 }
 
 .hide {
@@ -68,9 +80,10 @@ a, a:hover, a:visited {
     margin: 0 auto;
     height: 80%;
 }
- #column-group{
+
+#column-group{
     font-family: 'Merienda', cursive;
- }
+}
 
 #navbarDropdownMenuLink {
     color: black;

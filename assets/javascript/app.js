@@ -393,10 +393,10 @@ $("#new-search").on("click", function () {
 
 // Called when the user logs in, logs out, or opens the page
 firebase.auth().onAuthStateChanged(function (user) {
-
     // If user is signed in
     if (user) {
         // console.log("signed in");
+        $("#data-table").removeClass("hide");
 
         // Hide the log in button, and show the log out button
         $("#login-modal-button").addClass("hide");
@@ -424,61 +424,114 @@ firebase.auth().onAuthStateChanged(function (user) {
             let z = snap.val().zip;
             let m = snap.val().money.toString();
 
-            // Create a new HTML table row with jquery; add data attributes
-            let newRow = $("<tr>").addClass("past-search");
-            // Data attributes will be used as input if the user selects a choice
-            newRow.attr("data-city", c);
-            newRow.attr("data-zip", z);
-            newRow.attr("data-money", m);
+            // Create a new table row (tr tag); see fn below
+            let newRow = createNewRow(c, z, m)
 
-            // Format money string
-            if (m.indexOf(".") === -1) {
-                m = "$" + m + ".00";
-            } else if (m.indexOf(".") === m.length - 1) {
-                m = "$" + m + "00";
-            } else if (m.indexOf(".") === m.length - 2) {
-                m = "$" + m + "0";
-            }
+            // Format money string; see fn below
+            m = formatMoney(m);
+            if (m === false) { console.log("error formatting money"); }
 
-            // Format city string to capitalize first letter
-            if (c.indexOf(" ") !== -1) {
-                let wordArr = c.split(" ");
-                c = "";
+            // Format city string; see fn below
+            c = formatCity(c);
+            if (c === false) { console.log("error formatting city"); }
 
-                wordArr.forEach(function (word) {
-                    c += word.substr(0, 1) + word.slice(1) + " ";
-                })
+            // Populate the new row with td tags holding our data values; see fn below
+            populateRow(newRow, d, c, z, m);
 
-                c = c.trim();
-            } else {
-                c = c.substr(0, 1).toUpperCase() + c.slice(1);
-            }
-
-            let date = $("<td>").text(d);
-            let city = $("<td>").text(c);
-            let zip = $("<td>").text(z);
-            let budget = $("<td>").text(m);
-
-            newRow.append(date, city, zip, budget);
-
-            $("#past-searches").append(newRow);
-            // Increment recent searches to ensure they are limited to 10
-            // numOfRecentSearches++;
-            // console.log('numSearches: ' + numOfRecentSearches);
+            // Prepend the new row to the search list
+            $("#past-searches").prepend(newRow);
         });
-    } else { // If the user signed OUT - this may be unnecessary as the page is reloaded on sign out
+    } else {
+        let msg = $("<h4>").text("Sign in to see your search history!").addClass("text-center vertical-pad")
+        $("#table-div").append(msg);
+        $("#exampleModalCenterTitle").addClass("hide");
+        $("#searches-modal-header").addClass("hide");
+        $("#data-table").addClass("hide");
 
-        // These 4 lines may be unnecessary; just a precaution
-        dir = "/";
-        isSignedIn = false;
-        userEmail = "";
-        $("#navbarDropdownMenuLink").text("Guest User");
+        let button = $("<button>").attr("data-toggle", "modal").attr("data-target", "#exampleModal").addClass("btn-primary col-12").text("Sign In");
+        $("#table-div").append(button);
+        button.on("click", function () {
+            $("#exampleModalCenter").modal("hide");
+        });
 
-        // Hide the log out button, show the sign in button
-        $("#login-modal-button").removeClass("hide");
-        $("#logout").addClass("hide");
+        let msg2 = $("<h4>").text("If you don't have an account yet, we'll make one for you!").addClass("text-center vertical-pad")
+        $("#table-div").append(msg2);
     }
 });
+
+// Format money string
+function formatMoney(m) {
+    let output = false;
+
+    // Format money string
+    if (m.indexOf(".") === -1) { // If there is no decimal point
+        // Add dollar sign in front, .00 behind
+        output = "$" + m + ".00";
+    } else if (m.indexOf(".") === m.length - 1) { // If the number ends in a decimal point
+        // Add dollar sign in front, 00 behind
+        output = "$" + m + "00";
+    } else if (m.indexOf(".") === m.length - 2) { // If the number only has one digit after decimal
+        // Add dollar sign in front, 0 behind
+        output = "$" + m + "0";
+    } else { // If there were two or more digits after a decimal
+        // Add dollar sign in front, cut off extra characters
+        output = "$" + m.substr(0, m.indexOf(".") + 3);
+    }
+
+    return output;
+}
+
+// Format city string
+function formatCity(c) {
+    let output = false;
+
+    // Format city string to capitalize first letter
+    if (c.indexOf(" ") !== -1) { // If the name of the city includes a space
+        // Split the name of the city at each space
+        let wordArr = c.split(" ");
+        // Empty the city string
+        output = "";
+
+        // For each word in the name of the city
+        wordArr.forEach(function (word) {
+            // Concat the word on to the city string, with the first letter capitalized, and an ending space
+            output += word.substr(0, 1) + word.slice(1).toLowerCase() + " ";
+        })
+
+        // Cut off any excess whitespace
+        output = output.trim();
+    } else { // If there are no spaces in the name of the city
+        // Capitalize the first letter and lower-case the rest of the name
+        output = c.substr(0, 1).toUpperCase() + c.slice(1).toLowerCase();
+    }
+
+    return output;
+}
+
+// Create a new past-search row
+function createNewRow(c, z, m) {
+    // Create a new HTML table row with jquery; add data attributes
+    let output = $("<tr>").addClass("past-search");
+    // Data attributes will be used as input if the user selects a choice
+    output.attr("data-city", c);
+    output.attr("data-zip", z);
+    output.attr("data-money", m);
+
+    // Return that new table row
+    return output;
+}
+
+// Populate a new past-search row with the search data
+function populateRow(row, d, c, z, m) {
+    // Create new td tags for each data value
+    let date = $("<td>").text(d);
+    let city = $("<td>").text(c);
+    let zip = $("<td>").text(z);
+    let budget = $("<td>").text(m);
+
+    // Append all the new td tags to the new row
+    row.append(date, city, zip, budget);
+}
 
 // Called when a user clicks on a search result 
 $(document).on("click", ".result", function () {
