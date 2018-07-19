@@ -11,37 +11,50 @@ body {
     background-color: darkgray;
     opacity: 0.9;
 }
+
 a, a:hover, a:visited {
     color: #fff;
 }
 
+.past-search:hover { 
+    border: 1px solid #ddd;
+    background-color: #dcffdc;
+}
 
 .display-4 {
     border-bottom: 4px solid black;
     padding-bottom: 25px;
 }
 
-.modal-content {
-    background-image: url(buy-cash-coins-9660.jpg)
+.vertical-pad {
+    padding: 10px 0;
 }
 
 .modal-footer {
     background-color: midnightblue;
 }
 
+.modal-header {
+    padding-left: 10%;
+}
+
 @media (max-width: 480px) {
     .display-4 {
-        font-size: x-large
+        font-size: x-large;
     }
-    ;
+    
     #btn btn-primary {
-        width: 50%
+        width: 50%;
     }
-    ;
+    
     #btn btn-primary {
-        font-size: 29%
+        font-size: 29%;
     }
-    ;
+    
+}
+
+.horiz-center {
+    margin: 0 auto;
 }
 
 .hide {
@@ -67,10 +80,10 @@ a, a:hover, a:visited {
     margin: 0 auto;
     height: 80%;
 }
- #column-group{
-     font-family: Merienda, cursive;  
-     
- }
+
+#column-group{
+    font-family: 'Merienda', cursive;
+}
 
 #navbarDropdownMenuLink {
     color: black;
@@ -87,17 +100,17 @@ a, a:hover, a:visited {
 }
 
 #infoboxTitle{
-    font-family: Merienda, cursive;
+    font-family: 'Merienda', cursive;
     font-size: 12pt;
 }
 
 #infoboxDescription{
     font-size: 12pt;
-    font-family: Merienda, cursive;
+    font-family: 'Merienda', cursive;
 }
 
 .search{
-    font-family: Merienda, cursive;
+    font-family: 'Merienda', cursive;
     border: 1px, black;
     font-size: 14px; 
 }

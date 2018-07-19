@@ -29,53 +29,34 @@ Process (what happens when a user Submits)
     - Store search parameters under that username for them to return to later
 */
 
-
-
 /***********PRODUCTION CODE***************/
+// Database init and reference
 firebase.initializeApp(fbConfig);
 const db = firebase.database();
-// console.log(db.ref());
-/*****************************************/
 
-// Constant HTML references
+// Constant HTML references to the input fields
 const $money = $("#money");
 const $city = $("#city-location");
 const $zip = $("#zip-location");
-const $map = $("#map-div");
-const $results = $("#results");
 
 // Global vars
-var numOfRecentSearches = 0;
-var isSignedIn = false;
-var userEmail = "";
-var dir = "/";
-var map;
+// var numOfRecentSearches = 0; // Used to prevent overflow of recent searches
+var isSignedIn = false; // Contain the auth state to determine database actions
+var userEmail = ""; // Contain user's email address to sign database entries
+var dir = "/"; // Contain user's unique directory within the database
 
-var userLocation = null; // IF GEOLOCATED: BING LOCATION OBJECT
-var restaurantList = [];
+var map; // Global reference to the active map object
+var restaurantList = []; // Global array of all restaurant objects returned by Zomato
+var pinList = []; // Global array of all pin objects on map
+var infobox; // Global reference to the active infobox object
 
-$("#submit-button").on("click", function () {
-    event.preventDefault() // Prevents page from reloading on submit
+var userLocation = null; // IF GEOLOCATED: BING MAPS LOCATION OBJECT
 
-    let money = parseInt($money.val().trim());
-
-    let tempCity = $city.val().trim();
-    let city = tempCity.charAt(0).toUpperCase() + tempCity.slice(1).toLowerCase();
-
-    let zip = $zip.val().trim();
-
-    // map = new Microsoft.Maps.Map("#map-div", { showLocateMeButton: false });
-
-    // var located = getLocation();
-
-    getRestaurants(money, city, zip, true);
-});
-
+/**** FOR GEOLOCATION ****/
 /*
 function getLocation() {
     navigator.geolocation.getCurrentPosition(function (pos) {
         console.log("enter navigator")
-        // located = true;
 
         userLocation = new Microsoft.Maps.Location(pos.coords.latitude, pos.coords.longitude);
         console.log("navigator line 1");
@@ -92,271 +73,492 @@ function getLocation() {
     });
 }
 */
+/**** END GEOLOCATION ****/
 
+// Using user input, get restaurant information from the Zomato API, store in array
 function getRestaurants(money, city, zip, toPush) {
-    let maxDist = 20;
+    // let maxDist = 20; // NOT CURRENTLY IN USE
 
+    // First query URL to query Zomato for the city provided by user input
     var firstQueryURL = "https://developers.zomato.com/api/v2.1/cities?q=" + city + "&apikey=284d8bf6da6b7fc3efc07100c1246454"
-    // Parameters:
-    // q (city)
 
+    // AJAX call to Zomato for city information
     $.ajax({
         url: firstQueryURL,
         method: 'GET'
     }).then(function (res) {
-        // Res should contain an object for the city, with an id
+        // res should contain an object, representing the city, with a unique identifier
 
-        var id = res.location_suggestions["0"].id; // Set this to the restaurant id provided by the object
+        var id = res.location_suggestions["0"].id; // assign the city identifier to variable id
 
+        // If the city is not found, notify the user that their search failed
         if (id === undefined) {
-            console.log("No restaurants found; return (notify user)");
+            console.log("City not found; return (notify user)");
             return;
         }
 
+        // If the user is signed in and this function was called with TRUE in toPush, 
+        //  push this search to the database to be retrieved later.
         if (isSignedIn && toPush) {
-            db.ref(dir).push({ money, city, zip, userEmail });
+            db.ref(dir).push({ date: moment().format('MM/DD/YYYY, h:mm a'), money, city, zip, userEmail });
         }
 
+        // Build the nested query URL to search for restaurants within the city
         var secondQueryURL = "https://developers.zomato.com/api/v2.1/search?apikey=284d8bf6da6b7fc3efc07100c1246454&entity_type=city&sort=cost&order=asc&entity_id=" + id // Add parameters to this URL
 
+        // AJAX call to Zomato for restaurant information within city
         $.ajax({
             url: secondQueryURL,
             method: 'GET'
         }).then(function (res) {
             // Res should contain an object containing up to 20 restaurant objects, sorted by cost
-            // If we want more than 20, we would call again with an offset - don't worry about this right now
+            // If we want more than 20, we would call again with an offset - this would be difficult and highly inefficient
+            // To broaden our search would require paying for the API key
 
-            // console.log(res)
+            // Create a placeholder array for restaurants filtered by cost
             let filteredRestaurants = []
 
-            // Iterating through restaurant objects, push all restaurant objects where the average cost for two / 2 < money
-            // Loop logic goes here***
+            // Iterating through restaurant objects (LOOP), push all restaurant objects where the (average cost for two / 2) < money
             for (let i = 0; i < 20; i++) {
+                // Restaurants are not contained in an array, but are indexed - if we run out of them before 20, break out of loop
                 if (res.restaurants[i] === undefined) {
                     break;
                 }
 
+                // For ease of typing, name the important object path
                 let restaurant = res.restaurants[i].restaurant;
+
+                // Calculate cost for one, make the comparison described above
                 let costForOne = restaurant.average_cost_for_two / 2;
                 if (costForOne <= money && costForOne !== 0) {
-                    filteredRestaurants.push(restaurant);
+                    filteredRestaurants.push(restaurant); // Push to array if cost is acceptable
                 }
             }
 
-            // After this, assign the result to the global variable restaurantList
+            // Assign the result to the global variable restaurantList
             restaurantList = filteredRestaurants;
+
+            // Call the fns to display this information
             generateMap();
             generateList();
+
+            // Hide the search window
             $("#first-window").addClass("hide");
-            
         });
     });
 }
 
+// Using our array of restaurant objects, build the map with the Bing Maps API
 function generateMap() {
 
-    // Create a map object using Bing Maps API
-
-    // For each restaurant object in restaurantList, create a pushpin on the map with the address
-
-    // Remove the hide class from map-div
-
-    // var rect = new LocationRect(400, 400);
-
+    // Create a new Bing Maps map and assign it to global variable
     map = new Microsoft.Maps.Map("#map-div", { showLocateMeButton: false });
 
+    // Declare variable centerLoc outside the scope of the for loop (may not be necessary)
     var centerLoc;
 
+    // For each restaurant object (LOOP)
     for (let i = 0; i < restaurantList.length; i++) {
 
+        // For ease of typing, name the important object path
         var restaurant = restaurantList[i];
-        // console.log(restaurant);
 
+        // Get lat and long coords from restaurant object
         var latitude = restaurant.location.latitude;
         var longitude = restaurant.location.longitude;
+
+        // Create a new Bing Maps location object with restaurant coords
         var loc = new Microsoft.Maps.Location(latitude, longitude);
+
+        // Create a new Bing Maps pushpin at that location
         var pin = new Microsoft.Maps.Pushpin(loc);
-        // textbox
 
-        // console.log(restaurant)
-        var infobox = new Microsoft.Maps.Infobox(loc, {
-            visible: false, autoAlignment: true
-        });
+        // Maintain an array of our pushpins for the ".result" listener
+        pinList.push(pin);
 
-        infobox.setMap(map);
-
+        // Dynamically set pin metadata to be retrieved later for infobox display
         pin.metadata = {
             title: restaurant.name,
             description: restaurant.location.address,
             rating: restaurant.user_rating.aggregate_rating // not a property of metadata
         };
 
-        Microsoft.Maps.Events.addHandler(pin, 'click', function (args) {
-            // console.log(args.target);
-            let tar = args.target;
-            let pinLoc = new Microsoft.Maps.Location(tar.geometry.y, tar.geometry.x);
-            infobox.setOptions({
-                location: pinLoc,
-                title: tar.metadata.title,
-                description: tar.metadata.description,
-                rating: tar.metadata.rating, // need to attach rating to description
-                visible: true
-            });
-        });
-
-        Microsoft.Maps.Events.addHandler(pin, 'mouseover', function (args) {
-            // console.log(args.target);
-            let tar = args.target;
-            let pinLoc = new Microsoft.Maps.Location(tar.geometry.y, tar.geometry.x);
-            infobox.setOptions({
-                location: pinLoc,
-                title: tar.metadata.title,
-                description: tar.metadata.description,
-                rating: tar.metadata.rating, // need to attach rating to description
-                visible: true
-            });
-        });
-
-        Microsoft.Maps.Events.addHandler(pin, 'mouseout', function (args) {
-            // console.log(args.target);
-            infobox.setOptions({
-                visible: false
-            });
-        });
-
-        // textbox
+        // Push each pin to the map
         map.entities.push(pin);
 
+        // Set the center location to that of the first restaurant
         if (i === 0) {
             centerLoc = new Microsoft.Maps.Location(latitude, longitude);
         }
     };
 
+    // Create a placeholder infobox
+    infobox = new Microsoft.Maps.Infobox(centerLoc);
+
+    // Call function to add pin handlers for click, mouseover and mouseout
+    addPinHandlers();
+
+    // Set the map to center on the first restaurant, with appropriate zoom
     map.setView({
         mapTypeId: Microsoft.Maps.MapTypeId.road,
         center: centerLoc,
         zoom: 11.5
     });
 
+    // Show the map
     $("#map-div").removeClass("hide");
 }
 
-
+// Using our array of restaurant objects, generate a list of restaurants to display
 function generateList() {
-    if (restaurantList.length === 0) {
-        // console.log("empty list")
+    if (restaurantList.length === 0) { // Check for an empty list of restaurants
+        console.log("empty list"); // Somehow, notify user that there are no results
         return;
     }
 
     // For each restaurant object (LOOP)
     for (let i = 0; i < restaurantList.length; i++) {
-        //create a new anchor tag append the res lists
-        var NewAnchor = $("<a>").attr("class", "flex-column align-items-start");
-        NewAnchor.attr("href", "#")
-        // console.log(NewAnchor);
+
+        //create a new anchor tag append the restaurant list
+        var newAnchor = $("<a>").attr("class", "flex-column align-items-start result");
+        newAnchor.attr("href", "#");
+        newAnchor.attr("value", i);
+
         //Create new div to add the data into
-        var newDiv = $("<div>").attr("class", "d-flex w-100 justify-content-between")
+        var newDiv = $("<div>").attr("class", "d-flex w-100 justify-content-between");
 
         //Adds the restaurnaunt name in the drop down
-        var newName = $("<h5>").addClass("mb-1", "mb-name")
-        newName.text(restaurantList[i].name).css('text-align', 'left').css("padding-right", '20px')
+        var newName = $("<h5>").addClass("mb-1", "mb-name");
+        newName.text(restaurantList[i].name).css('text-align', 'left').css("padding-right", '20px');
 
         //Adds the address into the same dropdown box
-        var newAddress = $("<p>").addClass("mb-1", "mb-address")
-        newAddress.text(restaurantList[i].location.address).css('text-align', 'right').css("padding-left", '20px')
+        var newAddress = $("<p>").addClass("mb-1", "mb-address");
+        newAddress.text(restaurantList[i].location.address).css('text-align', 'right').css("padding-left", '20px');
 
+        // Appends the name and address to the new div
         newDiv.append(newName, newAddress);
-        // console.log(newDiv);
 
-        NewAnchor.append(newDiv).css("background-color", 'darkgrey').css("border", '1px solid black')
-        $("#column-group").append(NewAnchor)
+        // Appends the new div to the new anchor tag
+        newAnchor.append(newDiv).css("background-color", 'darkgrey').css("border", '1px solid black');
+
+        // Appends the anchor tag to the column group to display results
+        $("#column-group").append(newAnchor);
 
     }
-    $("#column-group").removeClass("hide")
+    $("#column-group").removeClass("hide");
     // Remove hide from new search button
 }
 
-$("#logout").on("click", function () {
+// Called to add event handlers to all pins, to appropriately display info boxes
+function addPinHandlers() {
+    pinList.forEach(function (pin) {
 
-    // Do nothing if not logged in 
-    if (!isSignedIn) {
-        return;
+        // On mouse click, show the info box
+        Microsoft.Maps.Events.addHandler(pin, 'click', function () {
+            hideInfoBox();
+            showInfoBox(pin, true);
+        });
+
+        // On mouse hover, show the info box
+        Microsoft.Maps.Events.addHandler(pin, 'mouseover', function () {
+            hideInfoBox();
+            showInfoBox(pin, false);
+        });
+
+        // When mouse leaves the pushpin, hide the info box
+        Microsoft.Maps.Events.addHandler(pin, 'mouseout', function () {
+            hideInfoBox();
+        });
+    });
+}
+
+// Called to hide the previous info box before showing a new one
+function hideInfoBox() {
+    infobox.setOptions({ visible: false });
+    infobox.setMap(null);
+}
+
+// Called to show an info box at a particular pin; pass a boolean to determine if 
+//  the map should be centered (do not center on mouseover)
+function showInfoBox(pin, centerMap) {
+    // Get the pin location
+    let pinLoc = new Microsoft.Maps.Location(pin.geometry.y, pin.geometry.x);
+
+    // Center the map on the pin to focus on
+    if (centerMap) {
+        map.setView({
+            center: pinLoc,
+            zoom: 11.5
+        });
     }
 
-    firebase.auth().signOut().then(function () {
-        window.location.reload(true);
-    }).catch(function (error) { console.log(error) });
-})
+    // Create the text box (infobox) associated with the push pin
+    infobox = new Microsoft.Maps.Infobox(pinLoc, {
+        location: pinLoc,
+        title: pin.metadata.title,
+        description: pin.metadata.description,
+        rating: pin.metadata.rating, // need to attach rating to description
+        visible: true
+    });
 
+    // Associate the infobox with the map
+    infobox.setMap(map);
+
+    // If infobox is clicked, center the map as if they clicked the pin
+    Microsoft.Maps.Events.addHandler(infobox, 'click', function () {
+        map.setView({
+            center: pinLoc,
+            zoom: 11.5
+        });
+    });
+}
+
+// Called when the user submits their search query
+$("#submit-button").on("click", function () {
+    event.preventDefault() // Prevents page from reloading on submit
+
+    // Get input from input fields
+    let money = parseInt($money.val().trim());
+
+    // Make the city input presentable regardless of user's choice of capitalization
+    let tempCity = $city.val().trim();
+    let city = tempCity.charAt(0).toUpperCase() + tempCity.slice(1).toLowerCase();
+    // Does not capitalize every word, if the city has multiple words; consider improving
+
+    let zip = $zip.val().trim();
+
+    /**** FOR GEOLOCATION ****/
+    // map = new Microsoft.Maps.Map("#map-div", { showLocateMeButton: false });
+    // var located = getLocation();
+    /**** END GEOLOCATION ****/
+
+    // Pass inputs to getRestaurants() where the Zomato API is queried for information
+    getRestaurants(money, city, zip, true);
+});
+
+// Called when the user attempts to log in
 $("#login").on("click", function () {
     event.preventDefault();
 
     // console.log(isSignedIn);
 
+    // If user is signed in, sign them out (this button can serve both functions)
     if (isSignedIn) {
         firebase.auth().signOut().then(function () {
             window.location.reload(true);
         }).catch(function (error) { console.log(error) });
-    }
+    } // This is deprecated; current implementation hides the log in button when signed in
+    // And hides the log out button when signed out
 
+    // Get email and password from input fields
     let em = $("#email").val().trim();
     let pw = $("#password").val().trim();
 
+    // Attempt to sign the user in
     firebase.auth().signInWithEmailAndPassword(em, pw).then(function () {
         window.location.reload(true);
     }).catch(function (error) {
+        // If the user does not exist, sign them up (which will sign them in)
         if (error.code === "auth/user-not-found") {
             firebase.auth().createUserWithEmailAndPassword(em, pw).then(function () {
                 window.location.reload(true);
             }).catch(function (error) { console.log(error); });
         }
-        // Different catch needed for wrong password to notify user
+        // Different catch needed for wrong password, to notify user
     });
 });
 
+// Called when the user attempts to log out
+$("#logout").on("click", function () {
+
+    // Do nothing if not logged in 
+    if (!isSignedIn) {
+        return;
+    } // This is deprecated; current implementation hides the log in button when signed in
+    // And hides the log out button when signed out
+
+    // Log the user out of their account and reload the page
+    firebase.auth().signOut().then(function () {
+        window.location.reload(true);
+    }).catch(function (error) { console.log(error) });
+})
+
+// Called when the user requests a new search
+// Reload the page (allow caching for speed) to present the user with a fresh search form
+$("#new-search").on("click", function () {
+    window.location.reload(false);
+    // This could be accomplished by using JQuery to manipulate the HTML and "start over"
+    // However, that is likely to be even less efficient? and a pain to implement
+});
+
+// Called when the user logs in, logs out, or opens the page
 firebase.auth().onAuthStateChanged(function (user) {
+    // If user is signed in
     if (user) {
-        console.log("signed in");
+        // console.log("signed in");
+        $("#data-table").removeClass("hide");
+
+        // Hide the log in button, and show the log out button
+        $("#login-modal-button").addClass("hide");
+        $("#logout").removeClass("hide");
+
+        // Save a boolean value to indicate the user is signed in
         isSignedIn = true;
+        // Save the user's email to use for signing the data sent to database (debugging tool)
         userEmail = user.email;
+
+        // Change the displayed name from "Guest User" to the user's email
         $("#navbarDropdownMenuLink").text(userEmail);
+
+        // Change the database directory to the user's unique identifier
         dir += user.uid;
 
+        // Called when the user performs a search and the data is pushed to database
         db.ref(dir).on("child_added", function (snap) {
             // console.log(dir);
             // console.log(snap.val());
 
-            if (numOfRecentSearches >= 10) {
-                return;
-            }
-
+            // Get input values from the database entry
+            let d = snap.val().date;
             let c = snap.val().city;
             let z = snap.val().zip;
-            let m = snap.val().money;
+            let m = snap.val().money.toString();
 
-            let $past = $("#past-searches");
-            let newP = $("<p>").addClass("search");
-            let text = c + ", " + z + ", $" + m;
-            newP.attr("data-city", c);
-            newP.attr("data-zip", z);
-            newP.attr("data-money", m);
-            newP.text(text);
-            $past.append(newP);
-            numOfRecentSearches++;
-            // console.log('numSearches: ' + numOfRecentSearches);
+            // Create a new table row (tr tag); see fn below
+            let newRow = createNewRow(c, z, m)
+
+            // Format money string; see fn below
+            m = formatMoney(m);
+            if (m === false) { console.log("error formatting money"); }
+
+            // Format city string; see fn below
+            c = formatCity(c);
+            if (c === false) { console.log("error formatting city"); }
+
+            // Populate the new row with td tags holding our data values; see fn below
+            populateRow(newRow, d, c, z, m);
+
+            // Prepend the new row to the search list
+            $("#past-searches").prepend(newRow);
         });
+    } else {
+        let msg = $("<h4>").text("Sign in to see your search history!").addClass("text-center vertical-pad")
+        $("#table-div").append(msg);
+        $("#exampleModalCenterTitle").addClass("hide");
+        $("#searches-modal-header").addClass("hide");
+        $("#data-table").addClass("hide");
+
+        let button = $("<button>").attr("data-toggle", "modal").attr("data-target", "#exampleModal").addClass("btn-primary col-12").text("Sign In");
+        $("#table-div").append(button);
+        button.on("click", function () {
+            $("#exampleModalCenter").modal("hide");
+        });
+
+        let msg2 = $("<h4>").text("If you don't have an account yet, we'll make one for you!").addClass("text-center vertical-pad")
+        $("#table-div").append(msg2);
     }
 });
 
-$(document).on("click", ".search", function () {
-    // console.log(this);
+// Format money string
+function formatMoney(m) {
+    let output = false;
 
-    let c = $(this).attr("data-city");
-    let z = $(this).attr("data-zip");
-    let m = $(this).attr("data-money");
+    // Format money string
+    if (m.indexOf(".") === -1) { // If there is no decimal point
+        // Add dollar sign in front, .00 behind
+        output = "$" + m + ".00";
+    } else if (m.indexOf(".") === m.length - 1) { // If the number ends in a decimal point
+        // Add dollar sign in front, 00 behind
+        output = "$" + m + "00";
+    } else if (m.indexOf(".") === m.length - 2) { // If the number only has one digit after decimal
+        // Add dollar sign in front, 0 behind
+        output = "$" + m + "0";
+    } else { // If there were two or more digits after a decimal
+        // Add dollar sign in front, cut off extra characters
+        output = "$" + m.substr(0, m.indexOf(".") + 3);
+    }
 
-    $("#exampleModalCenter").modal("hide");
+    return output;
+}
 
-    getRestaurants(m, c, z, false);
+// Format city string
+function formatCity(c) {
+    let output = false;
+
+    // Format city string to capitalize first letter
+    if (c.indexOf(" ") !== -1) { // If the name of the city includes a space
+        // Split the name of the city at each space
+        let wordArr = c.split(" ");
+        // Empty the city string
+        output = "";
+
+        // For each word in the name of the city
+        wordArr.forEach(function (word) {
+            // Concat the word on to the city string, with the first letter capitalized, and an ending space
+            output += word.substr(0, 1) + word.slice(1).toLowerCase() + " ";
+        })
+
+        // Cut off any excess whitespace
+        output = output.trim();
+    } else { // If there are no spaces in the name of the city
+        // Capitalize the first letter and lower-case the rest of the name
+        output = c.substr(0, 1).toUpperCase() + c.slice(1).toLowerCase();
+    }
+
+    return output;
+}
+
+// Create a new past-search row
+function createNewRow(c, z, m) {
+    // Create a new HTML table row with jquery; add data attributes
+    let output = $("<tr>").addClass("past-search");
+    // Data attributes will be used as input if the user selects a choice
+    output.attr("data-city", c);
+    output.attr("data-zip", z);
+    output.attr("data-money", m);
+
+    // Return that new table row
+    return output;
+}
+
+// Populate a new past-search row with the search data
+function populateRow(row, d, c, z, m) {
+    // Create new td tags for each data value
+    let date = $("<td>").text(d);
+    let city = $("<td>").text(c);
+    let zip = $("<td>").text(z);
+    let budget = $("<td>").text(m);
+
+    // Append all the new td tags to the new row
+    row.append(date, city, zip, budget);
+}
+
+// Called when a user clicks on a search result 
+$(document).on("click", ".result", function () {
+    event.preventDefault(); // Prevent any default behavior
+
+    // Hide old info box
+    hideInfoBox();
+
+    // Get the index of the pin we are trying to display an info box for
+    let i = $(this).attr("value");
+
+    // Show the info box
+    showInfoBox(pinList[i], true);
 });
 
+// Called when a user clicks on a recent search to replicate
+$(document).on("click", ".past-search", function () {
+    // console.log(this);
+
+    // Get input data from the HTML element
+    let c = $(this).attr("data-city");
+    let z = $(this).attr("data-zip");
+    let m = parseInt($(this).attr("data-money"));
+
+    // Hide the modal
+    $("#exampleModalCenter").modal("hide");
+
+    // Call getRestaurants() with the search data; pass "false" so this is not pushed to database again
+    getRestaurants(m, c, z, false);
+});
