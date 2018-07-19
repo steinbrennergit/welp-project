@@ -291,7 +291,9 @@ $("#submit-button").on("click", function () {
     $("#new-search").removeClass("hide");
 
     // Get input from input fields
-    let money = parseInt($money.val().trim());
+    let money = parseFloat($money.val().trim());
+
+    console.log(money, typeof money)
 
     // Make the city input presentable regardless of user's choice of capitalization
     let tempCity = $city.val().trim();
