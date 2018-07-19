@@ -56,7 +56,7 @@
                                 </div>
                                 <input type="text" class="form-control" id="money" placeholder="10.00">
                             </div>
-                            <small id="text-box" class="form-text text-muted">It's ok if you're poor, so are we.......</small>
+                            <small id="text-box" class="form-text text-muted">It's ok if you're poor, so are we...</small>
                         </div>
                         <div class="row">
 
@@ -72,7 +72,7 @@
                         <!-- Move modal to the begining to collect user info, or for auth-->
                         <div>
                             <button type="button" id="past-searches-button" class="btn btn-primary float-right" data-toggle="modal" data-target="#exampleModalCenter">
-                                Past Searches
+                                Recent Searches
                             </button>
                             <button type="button" id="submit-button" class="btn btn-success float-left">
                                 Search
@@ -126,13 +126,25 @@
     <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
-                <div class="modal-header"> 
-                    <h5 class="modal-title" id="exampleModalCenterTitle">Recent Searches</h5>
+                <div class="modal-header">
+                    <h5 class="modal-title text-center col-12" id="exampleModalCenterTitle">Recent Searches</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div id="past-searches"></div>
+                <div class="container">
+                    <table class="table col-12">
+                        <thead>
+                            <tr>
+                                <th scope="col">Date</th>
+                                <th scope="col">City</th>
+                                <th scope="col">Zip</th>
+                                <th scope="col">Budget</th>
+                            </tr>
+                        </thead>
+                        <tbody id="past-searches"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -140,9 +152,10 @@
     <!-- Firebase Reference -->
     <script src="https://www.gstatic.com/firebasejs/5.2.0/firebase.js"></script>
 
-    <!-- Linking JQuery and Bootstrap JS components -->
+    <!-- Linking JQuery, Moment.js and Bootstrap JS components -->
     <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
         crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
         crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T"

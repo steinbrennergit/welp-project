@@ -11,10 +11,15 @@ body {
     background-color: darkgray;
     opacity: 0.9;
 }
+
 a, a:hover, a:visited {
     color: #fff;
 }
 
+.past-search:hover { 
+    border: 1px solid #ddd;
+    background-color: #dcffdc;
+}
 
 .display-4 {
     border-bottom: 4px solid black;

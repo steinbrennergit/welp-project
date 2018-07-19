@@ -40,17 +40,17 @@ const $city = $("#city-location");
 const $zip = $("#zip-location");
 
 // Global vars
-var numOfRecentSearches = 0; // Used to prevent overflow of recent searches
+// var numOfRecentSearches = 0; // Used to prevent overflow of recent searches
 var isSignedIn = false; // Contain the auth state to determine database actions
 var userEmail = ""; // Contain user's email address to sign database entries
 var dir = "/"; // Contain user's unique directory within the database
+
 var map; // Global reference to the active map object
-
-var userLocation = null; // IF GEOLOCATED: BING LOCATION OBJECT
-
 var restaurantList = []; // Global array of all restaurant objects returned by Zomato
 var pinList = []; // Global array of all pin objects on map
 var infobox; // Global reference to the active infobox object
+
+var userLocation = null; // IF GEOLOCATED: BING MAPS LOCATION OBJECT
 
 /**** FOR GEOLOCATION ****/
 /*
@@ -100,7 +100,7 @@ function getRestaurants(money, city, zip, toPush) {
         // If the user is signed in and this function was called with TRUE in toPush, 
         //  push this search to the database to be retrieved later.
         if (isSignedIn && toPush) {
-            db.ref(dir).push({ money, city, zip, userEmail });
+            db.ref(dir).push({ date: moment().format('MM/DD/YYYY, h:mm a'), money, city, zip, userEmail });
         }
 
         // Build the nested query URL to search for restaurants within the city
@@ -377,7 +377,7 @@ $("#logout").on("click", function () {
     } // This is deprecated; current implementation hides the log in button when signed in
     // And hides the log out button when signed out
 
-    // Log the user out of their account
+    // Log the user out of their account and reload the page
     firebase.auth().signOut().then(function () {
         window.location.reload(true);
     }).catch(function (error) { console.log(error) });
@@ -418,31 +418,63 @@ firebase.auth().onAuthStateChanged(function (user) {
             // console.log(dir);
             // console.log(snap.val());
 
-            // Limit the list to 10 recent searches
-            if (numOfRecentSearches >= 10) {
-                return;
-            }
-
             // Get input values from the database entry
+            let d = snap.val().date;
             let c = snap.val().city;
             let z = snap.val().zip;
-            let m = snap.val().money;
+            let m = snap.val().money.toString();
 
-            // Create the HTML elements necessary to append to a list of options
-            let $past = $("#past-searches");
-            let newP = $("<p>").addClass("search");
-            let text = c + ", " + z + ", $" + m;
-            newP.attr("data-city", c);
-            newP.attr("data-zip", z);
-            newP.attr("data-money", m);
-            newP.text(text);
-            $past.append(newP);
+            // Create a new HTML table row with jquery; add data attributes
+            let newRow = $("<tr>").addClass("past-search");
+            // Data attributes will be used as input if the user selects a choice
+            newRow.attr("data-city", c);
+            newRow.attr("data-zip", z);
+            newRow.attr("data-money", m);
 
+            // Format money string
+            if (m.indexOf(".") === -1) {
+                m = "$" + m + ".00";
+            } else if (m.indexOf(".") === m.length - 1) {
+                m = "$" + m + "00";
+            } else if (m.indexOf(".") === m.length - 2) {
+                m = "$" + m + "0";
+            }
+
+            // Format city string to capitalize first letter
+            if (c.indexOf(" ") !== -1) {
+                let wordArr = c.split(" ");
+                c = "";
+
+                wordArr.forEach(function (word) {
+                    c += word.substr(0, 1) + word.slice(1) + " ";
+                })
+
+                c = c.trim();
+            } else {
+                c = c.substr(0, 1).toUpperCase() + c.slice(1);
+            }
+
+            let date = $("<td>").text(d);
+            let city = $("<td>").text(c);
+            let zip = $("<td>").text(z);
+            let budget = $("<td>").text(m);
+
+            newRow.append(date, city, zip, budget);
+
+            $("#past-searches").append(newRow);
             // Increment recent searches to ensure they are limited to 10
-            numOfRecentSearches++;
+            // numOfRecentSearches++;
             // console.log('numSearches: ' + numOfRecentSearches);
         });
-    } else { // If the user signed OUT, hide the log out button, show the sign in button
+    } else { // If the user signed OUT - this may be unnecessary as the page is reloaded on sign out
+
+        // These 4 lines may be unnecessary; just a precaution
+        dir = "/";
+        isSignedIn = false;
+        userEmail = "";
+        $("#navbarDropdownMenuLink").text("Guest User");
+
+        // Hide the log out button, show the sign in button
         $("#login-modal-button").removeClass("hide");
         $("#logout").addClass("hide");
     }
@@ -463,13 +495,13 @@ $(document).on("click", ".result", function () {
 });
 
 // Called when a user clicks on a recent search to replicate
-$(document).on("click", ".search", function () {
+$(document).on("click", ".past-search", function () {
     // console.log(this);
 
     // Get input data from the HTML element
     let c = $(this).attr("data-city");
     let z = $(this).attr("data-zip");
-    let m = $(this).attr("data-money");
+    let m = parseInt($(this).attr("data-money"));
 
     // Hide the modal
     $("#exampleModalCenter").modal("hide");
