@@ -3,6 +3,10 @@ body {
     background-image: url(bgimage.jpg);
 }
 
+.container-row {
+    max-width: 95%;
+}
+
 .jumbotron {
     margin: 0 auto;
     max-width: 445px;
